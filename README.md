@@ -15,9 +15,10 @@ Página del curso: https://oneill162.github.io/tesi2108-reparacion/
 | `unidadC.html` | Unidad C: Fuentes de alimentación y electricidad (tema: el banco de pruebas) |
 | `unidadD.html` | Unidad D: Procesadores (tema: el chip bajo el microscopio) |
 | `unidadE.html` | Unidad E: Memoria RAM (tema: las celdas de memoria) |
+| `unidadF.html` | Unidad F: Expansión y almacenamiento (tema: el disco duro abierto) |
 | `assets/kit.js` | Piezas comunes desde la Unidad B: fotos, créditos, clasificador y ejercicio corto |
 | `assets/deck.css`, `assets/deck.js` | Motor común de las presentaciones (heredado de TESI 2105): escala, transiciones, barra, índice, temporizador |
-| `assets/img/A/` a `E/` | Fotos de cada unidad (Wikimedia Commons; autor y licencia en la lámina de créditos) |
+| `assets/img/A/` a `F/` | Fotos de cada unidad (Wikimedia Commons; autor y licencia en la lámina de créditos) |
 | `assets/fonts/` | Schibsted Grotesk y JetBrains Mono (licencia SIL OFL) |
 
 ## Uso en clase
