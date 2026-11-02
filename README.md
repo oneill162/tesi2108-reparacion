@@ -17,9 +17,10 @@ Página del curso: https://oneill162.github.io/tesi2108-reparacion/
 | `unidadE.html` | Unidad E: Memoria RAM (tema: las celdas de memoria) |
 | `unidadF.html` | Unidad F: Expansión y almacenamiento (tema: el disco duro abierto) |
 | `unidadG.html` | Unidad G: Monitores (tema: la pantalla encendida) |
+| `unidadH.html` | Unidad H: Dispositivos periféricos (tema: el teclado) |
 | `assets/kit.js` | Piezas comunes desde la Unidad B: fotos, créditos, clasificador y ejercicio corto |
 | `assets/deck.css`, `assets/deck.js` | Motor común de las presentaciones (heredado de TESI 2105): escala, transiciones, barra, índice, temporizador |
-| `assets/img/A/` a `G/` | Fotos de cada unidad (Wikimedia Commons; autor y licencia en la lámina de créditos) |
+| `assets/img/A/` a `H/` | Fotos de cada unidad (Wikimedia Commons; autor y licencia en la lámina de créditos) |
 | `assets/fonts/` | Schibsted Grotesk y JetBrains Mono (licencia SIL OFL) |
 
 ## Uso en clase
