@@ -1,0 +1,490 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Unidad E: Memoria RAM · TESI 2108</title>
+<meta name="description" content="TESI 2108 Reparación de Computadoras. Unidad E: tipos y características de la memoria RAM, configuraciones, instalación y diagnóstico, contada con las celdas de memoria.">
+<link rel="preload" href="assets/fonts/schibsted-grotesk-latin-800-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="assets/deck.css">
+<style>
+/* Tema de la Unidad E: las celdas de memoria. Cuadrícula de bits con direcciones, azul petróleo y contactos dorados. */
+:root{--ground:#EEF3F3;--tone:#DCE6E6;--tone2:#C6D5D5;--ink:#0D2326;--soft:#3E5558;--accent:#0E7C7B;--accent-ink:#fff;--field:#0A2E33;--field-ink:#EAF4F4;--hi:#D4A93C;--gold:#D4A93C;--cell:#12434A}
+#bar{background:#082427}
+#map button.ch{background:transparent;box-shadow:inset 0 0 0 3px var(--gold)}
+#map button.ch.seen{background:var(--gold)}
+#map button.cur,#map button.ch.cur{background:#fff;box-shadow:none}
+button.go{background:var(--accent);color:#fff}
+button[aria-pressed=true]{background:var(--ink);color:#fff}
+
+/* capítulos: celdas */
+.cells{position:absolute;inset:0;padding:64px 80px;display:flex;flex-direction:column}
+.cells .addr{font:600 22px var(--mono);color:var(--gold)}
+.cells .ch-title{font-size:88px;line-height:.98;letter-spacing:-.035em;font-weight:800;max-width:720px;margin-top:18px}
+.cells .what{font-size:27px;line-height:1.38;max-width:660px;margin-top:22px;opacity:.86}
+.bitgrid{position:absolute;right:80px;top:64px;width:400px;display:grid;grid-template-columns:76px repeat(8,1fr);gap:5px;font:600 22px var(--mono)}
+.bitgrid .a{color:rgba(234,244,244,.45);font-size:15px;display:flex;align-items:center}
+.bitgrid i{font-style:normal;height:40px;background:var(--cell);display:flex;align-items:center;justify-content:center;color:rgba(234,244,244,.7);transition:background .3s,color .3s}
+.bitgrid i.one{background:var(--gold);color:#111}
+.cells .pins{margin-top:auto;display:flex;gap:4px;height:34px}
+.cells .pins i{flex:1;background:var(--gold);opacity:.35}
+.cells .pins i.on{opacity:1}
+.cells .notch{width:24px!important;flex:none!important;background:transparent!important}
+
+/* bloques */
+.ficha{background:#fff;padding:22px 26px}
+.ficha .k{font:600 17px var(--mono);color:var(--accent)}
+.ficha h3{margin-top:4px}
+.ficha p{font-size:21px;line-height:1.4;margin-top:8px;color:var(--soft)}
+.grid4{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+figure.foto{margin:0;background:#fff;padding:12px;display:flex;flex-direction:column}
+figure.foto .ph{flex:1;min-height:0;position:relative;background:var(--tone);overflow:hidden}
+figure.foto img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+figure.foto.contain img{object-fit:contain;background:#fff}
+figure.foto figcaption{font-size:15px;line-height:1.3;margin-top:8px;color:var(--soft)}
+figure.foto .ph .alt{position:absolute;inset:0;display:none;align-items:center;justify-content:center;text-align:center;padding:16px;font-size:20px;font-weight:600;color:var(--soft)}
+figure.foto.nofoto .ph .alt{display:flex}
+.msg{background:#fff;padding:14px 18px;font-size:21px;min-height:56px;margin-top:16px}
+.stat{background:var(--field);color:var(--field-ink);padding:18px 22px}
+.stat .v{font-size:50px;font-weight:800;letter-spacing:-.03em;line-height:1.05;color:var(--hi)}
+.stat .l{font-size:19px;margin-top:6px}
+.seg{display:flex;gap:8px;flex-wrap:wrap}
+.seg button{font-size:19px}
+
+/* RAM vs disco */
+.desk{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:20px}
+.box{background:#fff;padding:18px 20px;min-height:250px}
+.box h3{display:flex;justify-content:space-between}
+.box .items{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.box .items span{background:var(--tone);padding:8px 12px;font-size:19px;font-weight:600;transition:opacity .4s,transform .4s}
+.box .items span.gone{opacity:0;transform:translateY(-10px)}
+.box.off{background:#1b2a2c;color:#8FA3A5}
+
+/* muesca */
+.notchsim{display:grid;grid-template-columns:1fr 340px;gap:24px;margin-top:16px}
+.stick{position:relative;height:120px;background:#1F6B3A;margin-top:12px}
+.stick .chipsr{position:absolute;left:30px;right:30px;top:16px;height:44px;display:flex;gap:14px}
+.stick .chipsr i{flex:1;background:#111}
+.stick .gold{position:absolute;left:0;right:0;bottom:0;height:26px;background:repeating-linear-gradient(90deg,var(--gold) 0 5px,#1F6B3A 5px 8px)}
+.stick .nt{position:absolute;bottom:0;width:18px;height:30px;background:var(--ground);transition:left .5s var(--ease-expo)}
+.slotv{position:relative;height:40px;background:#222;margin-top:6px}
+.slotv .key{position:absolute;top:0;width:12px;height:40px;background:#E8C13C;transition:left .5s var(--ease-expo)}
+
+/* galería */
+.gal{display:grid;grid-template-columns:420px 1fr;gap:24px;margin-top:16px}
+
+/* paridad / ECC */
+.par{margin-top:18px}
+.bitrow{display:flex;gap:8px;margin-top:12px}
+.bitrow button{width:78px;height:78px;font:700 34px var(--mono);background:#fff;padding:0}
+.bitrow button.p{background:var(--tone2)}
+.bitrow button.err{background:#C0392B;color:#fff}
+.bitrow button.fix{background:#1E9E4F;color:#fff}
+
+/* canales: tarjeta con 4 ranuras */
+.ch4{display:grid;grid-template-columns:520px 1fr;gap:28px;margin-top:18px}
+.mbd{background:#0D4A31;height:400px;position:relative}
+.mbd .cpu{position:absolute;left:30px;top:120px;width:150px;height:150px;background:#2D2D2D;color:#E2B85A;font:700 22px var(--sans);display:flex;align-items:center;justify-content:center}
+.mbd button.sl{position:absolute;top:30px;width:46px;height:340px;padding:0;font:700 16px var(--mono);color:#fff;display:flex;align-items:flex-end;justify-content:center;padding-bottom:8px}
+.mbd button.sl[data-c=A]{background:#2B2B2B}
+.mbd button.sl[data-c=B]{background:#5E5E5E}
+.mbd button.sl.in{background:repeating-linear-gradient(180deg,#111 0 30px,#1F6B3A 30px 40px)!important;outline:4px solid var(--gold)}
+
+/* etiqueta */
+.lbl{display:flex;gap:6px;flex-wrap:wrap;font:700 46px/1.1 var(--mono);margin-top:14px}
+.lbl span{padding:6px 12px;background:#fff;cursor:pointer;border-bottom:8px solid transparent}
+.lbl span[aria-pressed=true]{border-bottom-color:var(--accent)}
+
+/* latencia */
+.lat{display:grid;grid-template-columns:1fr 1fr;gap:28px;margin-top:18px}
+.lat label{display:flex;justify-content:space-between;font-size:22px;font-weight:600;margin-top:14px}
+input[type=range]{width:100%;height:36px;accent-color:var(--accent)}
+
+/* chips, diag, quiz */
+.dx{display:grid;grid-template-columns:420px 1fr;gap:24px;margin-top:18px}
+.dx .list{display:flex;flex-direction:column;gap:10px}
+.dx .list button{text-align:left;font-size:20px;padding:14px 16px;background:#fff}
+.dx .list button[aria-pressed=true]{background:var(--ink);color:#fff}
+.dx .ans{background:#fff;padding:24px 28px;min-height:330px}
+.dx .ans .k{font:600 17px var(--mono);color:var(--accent)}
+.dx .ans p{font-size:23px;margin-top:6px}
+.quiz{margin-top:16px}
+.quiz .qz-q{font-size:30px;font-weight:700;line-height:1.2;min-height:76px}
+.quiz .ops{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+.quiz .ops button{text-align:left;font-size:22px;padding:16px 18px;background:#fff;color:var(--ink)}
+.quiz .ops button.ok{background:#1E9E4F;color:#fff}
+.quiz .ops button.bad{background:#C0392B;color:#fff}
+.quiz .why{font-size:21px;margin-top:14px;min-height:62px;background:var(--tone);padding:12px 16px}
+.quiz .foot{display:flex;justify-content:space-between;align-items:center;margin-top:14px;font-size:21px;font-weight:600}
+.dots{display:flex;gap:6px}.dots i{width:22px;height:10px;background:var(--tone2)}.dots i.ok{background:#1E9E4F}.dots i.bad{background:#C0392B}.dots i.cur{background:var(--ink)}
+.discrow{position:absolute;left:72px;right:72px;bottom:40px}
+.slide.field-hi{background:var(--hi)}
+.field-hi .q{font-size:54px;line-height:1.05;letter-spacing:-.03em;font-weight:800;max-width:1100px}
+.cred-list{columns:2;column-gap:40px;font-size:15px;line-height:1.45;margin-top:14px;padding-left:22px}
+.cred-list a{color:var(--ink)}
+</style>
+</head>
+<body>
+<div id="viewport"><div id="stage" data-name="TESI 2108 · Unidad E">
+
+<!-- portada -->
+<section class="slide chapter" data-title="Portada">
+  <div class="cells">
+    <div class="addr" data-a>0x0000 · TESI 2108</div>
+    <h1 class="mask" style="margin-top:20px;font-size:100px;max-width:700px"><span>Unidad E: Memoria RAM</span></h1>
+    <p class="what" data-a>Semana 6 · lunes 28 de septiembre de 2026<br>Prof. Eduardo O. De Jesús Arroyo · Instituto Tecnológico de Puerto Rico</p>
+    <div class="pins" data-a></div>
+  </div>
+  <div class="bitgrid" data-a data-rows="8"></div>
+</section>
+
+<section class="slide" data-title="Al terminar la clase">
+  <h2 class="mask"><span>Al terminar la clase podrás…</span></h2>
+  <div class="grid4 gap">
+    <div class="ficha" data-a><div class="k">SIMM · DIMM · SO-DIMM · RIMM</div><h3>Comparar los tipos</h3><p>De memoria y de módulos.</p></div>
+    <div class="ficha" data-a><div class="k">PARIDAD · ECC</div><h3>Explicar la corrección de errores</h3><p>Y cuándo se usa la memoria ECC.</p></div>
+    <div class="ficha" data-a><div class="k">1 · 2 · 4 CANALES</div><h3>Configurar la memoria</h3><p>En las ranuras correctas y de forma compatible.</p></div>
+    <div class="ficha" data-a><div class="k">MEMTEST · mdsched</div><h3>Instalar y diagnosticar</h3><p>Módulos y sus fallas comunes.</p></div>
+  </div>
+</section>
+
+<!-- CAP 1 -->
+<section class="slide chapter" data-title="01 · Tipos de memoria">
+  <div class="cells">
+    <div class="addr" data-a>0x0100</div>
+    <h2 class="ch-title mask"><span>Tipos de memoria</span></h2>
+    <p class="what" data-a>Qué es la RAM, de SDRAM a DDR5, los módulos y la corrección de errores.</p>
+    <div class="pins" data-a data-on="1"></div>
+  </div>
+  <div class="bitgrid" data-a data-rows="8" data-base="256"></div>
+</section>
+
+<section class="slide" data-title="RAM y almacenamiento">
+  <h2 class="mask"><span>La RAM es la mesa; el disco es el archivo</span></h2>
+  <div class="desk">
+    <div class="box" id="ram" data-a><h3><span>RAM · 16 GB</span><small class="small">volátil</small></h3><div class="items" id="ram-i"><span>Chrome</span><span>Word: tarea.docx</span><span>Spotify</span><span>Windows</span></div></div>
+    <div class="box" id="ssd" data-a><h3><span>SSD · 512 GB</span><small class="small">no volátil</small></h3><div class="items" id="ssd-i"><span>Windows</span><span>Chrome</span><span>Word</span><span>Fotos</span></div></div>
+  </div>
+  <div class="row" style="margin-top:16px" data-a><button class="go" id="save">Guardar tarea.docx</button><button id="off">Apagar el equipo</button><button id="on">Encender</button></div>
+  <div class="msg" id="desk-msg">La RAM guarda lo que estás usando ahora; el SSD guarda los archivos aunque se apague el equipo.</div>
+</section>
+
+<section class="slide" data-title="De SDRAM a DDR5">
+  <h2 class="mask"><span>Cada generación, el doble de rápida</span></h2>
+  <div class="cols" style="grid-template-columns:1fr 340px;gap:24px;margin-top:20px">
+    <div data-a>
+      <table class="t"><tr><th>Tipo</th><th>Pines (DIMM)</th><th>Voltaje</th><th>Velocidad común</th></tr>
+        <tr><td>SDRAM</td><td>168</td><td>3.3 V</td><td>133 MT/s</td></tr><tr><td>DDR</td><td>184</td><td>2.5 V</td><td>400 MT/s</td></tr>
+        <tr><td>DDR2</td><td>240</td><td>1.8 V</td><td>800 MT/s</td></tr><tr><td>DDR3</td><td>240</td><td>1.5 V</td><td>1600 MT/s</td></tr>
+        <tr><td>DDR4</td><td>288</td><td>1.2 V</td><td>3200 MT/s</td></tr><tr><td>DDR5</td><td>288</td><td>1.1 V</td><td>6400 MT/s</td></tr></table>
+    </div>
+    <figure class="foto" data-a style="height:440px"><div class="ph"><img data-cm="DDR5_SDRAM_IMGP6304_smial_wp.jpg" alt="Módulo de memoria DDR5"><div class="alt">Módulo DDR5</div></div><figcaption>DDR5: regulador de voltaje en el propio módulo.</figcaption></figure>
+  </div>
+</section>
+
+<section class="slide" data-title="La muesca">
+  <h2 class="mask"><span>Simulador: ¿entra en la ranura?</span></h2>
+  <div class="notchsim">
+    <div data-a>
+      <h3>Módulo</h3><div class="seg" id="ns-m" style="margin-top:8px"><button data-g="ddr2">DDR2</button><button data-g="ddr3">DDR3</button><button data-g="ddr4">DDR4</button><button data-g="ddr5">DDR5</button></div>
+      <div class="stick"><div class="chipsr"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><div class="gold"></div><div class="nt" id="ns-nt"></div></div>
+      <div class="slotv"><div class="key" id="ns-key"></div></div>
+      <h3 style="margin-top:16px">Ranura de la tarjeta madre</h3><div class="seg" id="ns-s" style="margin-top:8px"><button data-g="ddr2">DDR2</button><button data-g="ddr3">DDR3</button><button data-g="ddr4">DDR4</button><button data-g="ddr5">DDR5</button></div>
+    </div>
+    <div data-a>
+      <div class="stat" id="ns-st"><div class="v" id="ns-v">Entra</div><div class="l" id="ns-l"></div></div>
+      <figure class="foto" style="height:200px;margin-top:14px"><div class="ph"><img data-cm="Notch_position_between_DDR_and_DDR2.jpg" alt="Comparación de la muesca de un módulo DDR y uno DDR2"><div class="alt">Muesca DDR y DDR2</div></div><figcaption>La muesca cambia de lugar entre generaciones.</figcaption></figure>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-title="Tipos de módulos">
+  <h2 class="mask"><span>Tipos de módulos</span></h2>
+  <div class="gal">
+    <figure class="foto" data-a style="height:440px"><div class="ph"><img id="g-img" alt=""><div class="alt" id="g-alt"></div></div><figcaption id="g-cap"></figcaption></figure>
+    <div data-a>
+      <div class="seg" id="g-tabs"></div>
+      <div class="ficha" style="margin-top:14px;min-height:300px"><div class="k" id="g-k"></div><h3 id="g-h" style="font-size:36px"></h3><p id="g-p" style="font-size:23px"></p></div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-title="Paridad y ECC">
+  <h2 class="mask"><span>Paridad y ECC: detectar y corregir</span></h2>
+  <div class="par">
+    <div class="seg" id="pm" data-a><button data-pm="none">Sin ECC</button><button data-pm="par">Paridad</button><button data-pm="ecc">ECC</button></div>
+    <div class="bitrow" id="br" data-a></div>
+    <div class="row" style="margin-top:14px" data-a><button class="go" id="flip">Simular un error (un rayo cósmico cambia un bit)</button><button id="pr">Reiniciar</button></div>
+    <div class="msg" id="par-msg" data-a style="min-height:84px"></div>
+    <div class="cols" style="grid-template-columns:1fr 300px;gap:20px;margin-top:12px" data-a>
+      <p class="body">ECC se usa en servidores y estaciones de trabajo; necesita soporte de la CPU y de la tarjeta madre. No mezcles módulos ECC con módulos sin ECC.</p>
+      <figure class="foto" style="height:120px"><div class="ph"><img data-cm="Micron_PC2700_DDR_ECC_REG.JPG" alt="Módulo de memoria DDR con ECC para servidor"><div class="alt">Módulo ECC</div></div></figure>
+    </div>
+  </div>
+</section>
+
+<!-- CAP 2 -->
+<section class="slide chapter" data-title="02 · Configuraciones">
+  <div class="cells">
+    <div class="addr" data-a>0x0200</div>
+    <h2 class="ch-title mask"><span>Configuraciones de memoria</span></h2>
+    <p class="what" data-a>Canales, una o doble cara, la etiqueta, la velocidad y la latencia.</p>
+    <div class="pins" data-a data-on="2"></div>
+  </div>
+  <div class="bitgrid" data-a data-rows="8" data-base="512"></div>
+</section>
+
+<section class="slide" data-title="Canales y ranuras">
+  <h2 class="mask"><span>Toca las ranuras para instalar módulos</span></h2>
+  <div class="ch4">
+    <div class="mbd" id="mbd" data-a>
+      <div class="cpu">CPU</div>
+      <button class="sl" data-s="A1" data-c="A" style="left:240px">A1</button>
+      <button class="sl" data-s="A2" data-c="A" style="left:300px">A2</button>
+      <button class="sl" data-s="B1" data-c="B" style="left:370px">B1</button>
+      <button class="sl" data-s="B2" data-c="B" style="left:430px">B2</button>
+    </div>
+    <div data-a>
+      <div class="stat"><div class="v" id="chv">—</div><div class="l" id="chl">Sin módulos instalados.</div></div>
+      <div class="msg" id="chm" style="min-height:120px">Con dos módulos, la mayoría de los fabricantes recomienda A2 y B2. Confirma siempre en el manual.</div>
+      <p class="small">Ancho de banda con DDR4-3200: 25.6 GB/s por canal (3200 × 8 bytes).</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-title="Lee la etiqueta">
+  <h2 class="mask"><span>Lee la etiqueta: toca cada parte</span></h2>
+  <div class="cols" style="grid-template-columns:400px 1fr;gap:24px;margin-top:18px">
+    <figure class="foto" data-a style="height:300px"><div class="ph"><img data-cm="4GB_DDR3_SO-DIMM.jpg" alt="Módulo SO-DIMM DDR3 de 4 GB con etiqueta 2Rx8 PC3-10600S"><div class="alt">Módulo DDR3 con etiqueta</div></div><figcaption>Etiqueta real: «4GB 2Rx8 PC3-10600S-9-10-F2».</figcaption></figure>
+    <div data-a>
+      <div class="seg" id="lb-pick"><button data-l="0">DDR3 de la foto</button><button data-l="1">DDR4 de escritorio</button></div>
+      <div class="lbl" id="lb"></div>
+      <div class="msg" id="lb-msg" style="font-size:23px;min-height:110px">Toca cada parte de la etiqueta.</div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-title="Velocidad y latencia">
+  <h2 class="mask"><span>Velocidad y latencia: compara dos módulos</span></h2>
+  <div class="lat">
+    <div data-a>
+      <div class="ficha"><div class="k">MÓDULO 1</div>
+        <label for="m1">Velocidad <b id="m1v"></b></label><input type="range" id="m1" min="0" max="10" value="4">
+        <label for="c1">Latencia CAS (CL) <b id="c1v"></b></label><input type="range" id="c1" min="12" max="46" value="16"></div>
+      <div class="ficha" style="margin-top:12px"><div class="k">MÓDULO 2</div>
+        <label for="m2">Velocidad <b id="m2v"></b></label><input type="range" id="m2" min="0" max="10" value="2">
+        <label for="c2">Latencia CAS (CL) <b id="c2v"></b></label><input type="range" id="c2" min="12" max="46" value="19"></div>
+    </div>
+    <div data-a>
+      <div class="grid4" style="grid-template-columns:1fr 1fr"><div class="stat"><div class="v" id="ns1"></div><div class="l">Latencia real módulo 1</div></div><div class="stat"><div class="v" id="ns2"></div><div class="l">Latencia real módulo 2</div></div></div>
+      <div class="msg" id="mix" style="min-height:120px"></div>
+      <p class="small">Latencia en nanosegundos = CL × 2000 ÷ MT/s. Activa XMP (Intel) o EXPO (AMD) en el BIOS para la velocidad anunciada.</p>
+    </div>
+  </div>
+</section>
+
+<!-- CAP 3 -->
+<section class="slide chapter" data-title="03 · Instalación">
+  <div class="cells">
+    <div class="addr" data-a>0x0300</div>
+    <h2 class="ch-title mask"><span>Colocación en la tarjeta madre</span></h2>
+    <p class="what" data-a>Escritorio y laptop: alinear, presionar y verificar.</p>
+    <div class="pins" data-a data-on="3"></div>
+  </div>
+  <div class="bitgrid" data-a data-rows="8" data-base="768"></div>
+</section>
+
+<section class="slide" data-title="Instalación paso a paso">
+  <h2 class="mask"><span>Instalación: escritorio y laptop</span></h2>
+  <div class="grid3" style="margin-top:20px">
+    <figure class="foto" data-a style="height:250px"><div class="ph"><img data-cm="Dual_channel_slots.jpg" alt="Ranuras de memoria de doble canal con colores"><div class="alt">Ranuras de doble canal</div></div><figcaption>Escritorio: los colores marcan los pares de doble canal.</figcaption></figure>
+    <figure class="foto" data-a style="height:250px"><div class="ph"><img data-cm="DDR_SO-DIMM_slot_PNr°0341.jpg" alt="Ranura SO-DIMM de una laptop"><div class="alt">Ranura SO-DIMM</div></div><figcaption>Laptop: el SO-DIMM entra a 45° y baja hasta los seguros.</figcaption></figure>
+    <figure class="foto" data-a style="height:250px"><div class="ph"><img data-cm="Ramaxel_16_GB_DDR5-5600_SO-DIMM_memory_module.jpg" alt="Módulos SO-DIMM DDR5"><div class="alt">SO-DIMM DDR5</div></div><figcaption>SO-DIMM DDR5 (262 pines).</figcaption></figure>
+  </div>
+  <div class="grid4" data-a style="grid-template-columns:repeat(4,1fr);margin-top:14px">
+    <div class="ficha"><div class="k">1</div><h3>Prepara</h3><p>Desconecta, quita la batería si puedes y usa la pulsera.</p></div>
+    <div class="ficha"><div class="k">2</div><h3>Alinea</h3><p>La muesca con la guía de la ranura.</p></div>
+    <div class="ficha"><div class="k">3</div><h3>Inserta</h3><p>Presiona parejo hasta el clic de los seguros.</p></div>
+    <div class="ficha"><div class="k">4</div><h3>Verifica</h3><p>Capacidad y velocidad en el BIOS o en Windows.</p></div>
+  </div>
+</section>
+
+<!-- CAP 4 -->
+<section class="slide chapter" data-title="04 · Fallas y diagnóstico">
+  <div class="cells">
+    <div class="addr" data-a>0x0400</div>
+    <h2 class="ch-title mask"><span>Fallas y diagnóstico</span></h2>
+    <p class="what" data-a>Síntomas que parecen de software y las herramientas para probar la memoria.</p>
+    <div class="pins" data-a data-on="4"></div>
+  </div>
+  <div class="bitgrid" data-a data-rows="8" data-base="1024" data-err="1"></div>
+</section>
+
+<section class="slide" data-title="Diagnostica la falla">
+  <h2 class="mask"><span>Síntomas de problemas de memoria</span></h2>
+  <div class="dx">
+    <div class="list" id="dx" data-a></div>
+    <div class="ans" data-a><div class="k" id="dx-k">SÍNTOMA</div><h3 id="dx-h" style="font-size:30px">Escoge un síntoma</h3><p id="dx-c"></p><p id="dx-s" style="color:var(--soft)"></p></div>
+  </div>
+</section>
+
+<section class="slide" data-title="Herramientas de diagnóstico">
+  <h2 class="mask"><span>Herramientas para probar la memoria</span></h2>
+  <div class="cols" style="grid-template-columns:520px 1fr;gap:24px;margin-top:20px">
+    <figure class="foto contain" data-a style="height:400px"><div class="ph"><img data-cm="Memtest86+_Screenshot.png" alt="Pantalla de la prueba de memoria Memtest86+"><div class="alt">Memtest86+</div></div><figcaption>Memtest86+ arranca desde una memoria USB y prueba la RAM.</figcaption></figure>
+    <div class="grid4" data-a style="grid-template-columns:1fr;gap:12px">
+      <div class="ficha"><div class="k">mdsched.exe</div><h3>Diagnóstico de memoria de Windows</h3><p>Reinicia el equipo y prueba la RAM.</p></div>
+      <div class="ficha"><div class="k">UEFI/BIOS · TASKMGR</div><h3>Revisa capacidad y velocidad</h3><p>Y si el perfil XMP o EXPO está activo.</p></div>
+      <div class="ficha"><div class="k">INTERCAMBIO</div><h3>Un módulo a la vez</h3><p>En distintas ranuras: así sabes si falla el módulo o la ranura.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="slide field-hi" data-title="Actividad: identifica la memoria">
+  <p class="small" style="color:var(--ink);font-size:24px;font-weight:700">Actividad en el laboratorio · en parejas</p>
+  <p class="q sub">Ordena los módulos por generación según la muesca, interpreta sus etiquetas y, en Windows, anota velocidad y ranuras usadas. Propón una ampliación compatible.</p>
+  <div class="discrow"><div class="timer" data-timer="1500"></div></div>
+</section>
+
+<section class="slide" data-title="Ejercicio corto">
+  <h2 class="mask"><span>Ejercicio corto: seis preguntas</span></h2>
+  <div class="quiz" id="qz" data-a>
+    <div class="qz-q"></div><div class="ops"></div><div class="why"></div>
+    <div class="foot"><div class="dots"></div><span class="qz-n"></span><button class="go qz-next">Siguiente</button></div>
+  </div>
+</section>
+
+<section class="slide" data-title="Créditos y referencias">
+  <h2 class="mask"><span>Créditos de las fotos y referencias</span></h2>
+  <p class="small sub">Fotos de Wikimedia Commons, guardadas con la presentación. Cada enlace lleva a la página del archivo.</p>
+  <ol class="cred-list" id="creds"></ol>
+  <p class="small" style="margin-top:12px">Referencias: Meyers, M. (2025). <i>CompTIA A+ certification all-in-one exam guide</i> (11th ed.). McGraw-Hill · Mueller, S. (2022). <i>Upgrading and repairing PCs</i> (22nd ed.). Que · JEDEC. (s.f.). Main memory standards. · ITPR. (2026). Prontuario TESI 2108 (rev. mayo 2026).</p>
+</section>
+
+<section class="slide chapter" data-title="Cierre">
+  <div class="cells">
+    <div class="addr" data-a>0xFFFF · FIN</div>
+    <h2 class="ch-title mask"><span>Próxima: expansión y almacenamiento</span></h2>
+    <p class="what" data-a>Próxima clase: lunes 5 de octubre, Unidad F. Trae los datos de la memoria de tu computadora.</p>
+    <div class="pins" data-a data-on="9"></div>
+  </div>
+  <div class="bitgrid" data-a data-rows="8" data-base="65280"></div>
+</section>
+
+</div></div>
+<script src="assets/deck.js"></script>
+<script src="assets/kit.js"></script>
+<script>
+(function(){
+'use strict';
+var $=function(i){return document.getElementById(i)};
+var CRED={"Notch_position_between_DDR_and_DDR2.jpg": {"f": "Notch_position_between_DDR_and_DDR2", "a": "", "l": "CC BY-SA 3.0"}, "Dual_channel_slots.jpg": {"f": "Dual_channel_slots", "a": "User:Matrix87", "l": "Public domain"}, "30_pin_SIMM_-_1Mo_-_taken_from_an_Atari_STE.jpg": {"f": "30_pin_SIMM_1Mo_taken_from_an_Atari_STE", "a": "Wolfgang \"Darkoneko\" ten Weges", "l": "CC BY-SA 3.0"}, "SIMM_Sockets_with_RAM.jpg": {"f": "SIMM_Sockets_with_RAM", "a": "Appaloosa", "l": "CC BY-SA 3.0"}, "RDRAM-und-sein-CRIMM.jpg": {"f": "RDRAM_und_sein_CRIMM", "a": "L.Willms", "l": "CC BY-SA 3.0"}, "Micron_PC2700_DDR_ECC_REG.JPG": {"f": "Micron_PC2700_DDR_ECC_REG", "a": "Mixabest", "l": "Public domain"}, "4GB_DDR3_SO-DIMM.jpg": {"f": "4GB_DDR3_SO_DIMM", "a": "Tobias b köhler", "l": "CC BY-SA 3.0"}, "DDR4_DIMM_4GB_-2133_IMGP5813_smial_wp.jpg": {"f": "DDR4_DIMM_4GB_2133_IMGP5813_smial_wp", "a": "smial", "l": "FAL"}, "RAM_Module_(SDRAM-DDR4).jpg": {"f": "RAM_Module_SDRAM_DDR4", "a": "ElooKoN", "l": "CC BY-SA 4.0"}, "DDR5_SDRAM_IMGP6304_smial_wp.jpg": {"f": "DDR5_SDRAM_IMGP6304_smial_wp", "a": "Smial (talk)", "l": "FAL"}, "168_pin_and_184_pin_DIMM.jpg": {"f": "168_pin_and_184_pin_DIMM", "a": "Veeblefetzer", "l": "CC BY 4.0"}, "Ramaxel_16_GB_DDR5-5600_SO-DIMM_memory_module.jpg": {"f": "Ramaxel_16_GB_DDR5_5600_SO_DIMM_memory_module", "a": "ITEagle Europe - Sebastiaan Broekhoven", "l": "CC BY-SA 4.0"}, "Memtest86+_Screenshot.png": {"f": "Memtest86_Screenshot", "a": "Grendelkhan", "l": "GPL"}, "DDR_SO-DIMM_slot_PNr°0341.jpg": {"f": "DDR_SO_DIMM_slot_PNr_0341", "a": "D-Kuru", "l": "CC BY-SA 3.0 at"}};
+function press(cont,attr,val){[].forEach.call(cont.querySelectorAll('['+attr+']'),function(b){b.setAttribute('aria-pressed',String(b.getAttribute(attr))===String(val))})}
+Kit.photos('E',CRED);
+
+/* ---------- celdas y contactos de los capítulos ---------- */
+var red=matchMedia('(prefers-reduced-motion: reduce)').matches;
+[].forEach.call(document.querySelectorAll('.bitgrid'),function(g){var base=+(g.dataset.base||0),h='';
+  for(var r=0;r<+g.dataset.rows;r++){h+='<span class="a">0x'+('000'+(base+r*8).toString(16).toUpperCase()).slice(-4)+'</span>';for(var c=0;c<8;c++){var on=Math.random()<.45;h+='<i class="'+(on?'one':'')+'">'+(on?1:0)+'</i>'}}g.innerHTML=h});
+[].forEach.call(document.querySelectorAll('.pins'),function(p){var on=+(p.dataset.on||0),h='';for(var i=0;i<40;i++){if(i===24)h+='<i class="notch"></i>';h+='<i class="'+(on===9||Math.floor(i/10)<on?'on':'')+'"></i>'}p.innerHTML=h});
+var flips=null;
+document.addEventListener('deck:slide',function(e){clearInterval(flips);var g=e.detail.slide.querySelector('.bitgrid');if(!g||red)return;var cs=g.querySelectorAll('i');
+  flips=setInterval(function(){for(var k=0;k<4;k++){var c=cs[Math.floor(Math.random()*cs.length)],on=!c.classList.contains('one');c.classList.toggle('one',on);c.textContent=on?1:0}},220)});
+
+/* ---------- RAM vs SSD ---------- */
+var saved=false,isOff=false;
+$('save').onclick=function(){if(isOff)return;if(!saved){var s=document.createElement('span');s.textContent='tarea.docx';$('ssd-i').appendChild(s);saved=true}$('desk-msg').textContent='Guardado: la tarea ahora también está en el SSD.'};
+$('off').onclick=function(){isOff=true;[].forEach.call($('ram-i').children,function(s){s.classList.add('gone')});$('ram').classList.add('off');
+  $('desk-msg').textContent='Al apagar, la RAM se borra (es volátil). '+(saved?'La tarea está a salvo en el SSD.':'¡La tarea no se guardó y se perdió!')};
+$('on').onclick=function(){isOff=false;$('ram').classList.remove('off');$('ram-i').innerHTML='<span>Windows</span>';$('desk-msg').textContent='Al encender, Windows se carga del SSD a la RAM. '+(saved?'Abre tarea.docx desde el SSD.':'La tarea no está: no se guardó.')};
+
+/* ---------- muesca ---------- */
+var NP={ddr2:52,ddr3:43,ddr4:48,ddr5:50},NN={ddr2:'DDR2',ddr3:'DDR3',ddr4:'DDR4',ddr5:'DDR5'},nm='ddr4',ns='ddr4';
+function nsDraw(){press($('ns-m'),'data-g',nm);press($('ns-s'),'data-g',ns);$('ns-nt').style.left='calc('+NP[nm]+'% - 9px)';$('ns-key').style.left='calc('+NP[ns]+'% - 6px)';
+  var ok=nm===ns;$('ns-v').textContent=ok?'Entra':'No entra';$('ns-st').style.background=ok?'#14552F':'#7A1E1E';
+  $('ns-l').textContent=ok?'Muesca y guía coinciden: '+NN[nm]+' en ranura '+NN[ns]+'.':'La muesca del '+NN[nm]+' no coincide con la guía de la ranura '+NN[ns]+'. No la fuerces: dañarías el módulo o la ranura.'}
+[].forEach.call($('ns-m').children,function(b){b.onclick=function(){nm=b.dataset.g;nsDraw()}});[].forEach.call($('ns-s').children,function(b){b.onclick=function(){ns=b.dataset.g;nsDraw()}});nsDraw();
+
+/* ---------- galería de módulos ---------- */
+var G=[['SIMM','30 o 72 pines','SIMM','Equipos de los años 80 y 90. Contactos iguales en ambos lados; se instalaban en pares.','30_pin_SIMM_-_1Mo_-_taken_from_an_Atari_STE.jpg','Módulo SIMM de 30 pines'],
+ ['SIMM en la tarjeta','Instalados en pares','SIMM instalados','Así se veían las ranuras SIMM en una tarjeta 486.','SIMM_Sockets_with_RAM.jpg','Ranuras SIMM con módulos instalados'],
+ ['DIMM','168 a 288 pines','DIMM','Escritorio. Contactos distintos en cada lado y una muesca de guía. SDRAM 168, DDR 184.','168_pin_and_184_pin_DIMM.jpg','Módulos DIMM de 168 y 184 pines'],
+ ['SO-DIMM','200 a 262 pines','SO-DIMM','Laptops y mini PC: más corto. DDR4 260 pines, DDR5 262. Muchas laptops nuevas la traen soldada.','4GB_DDR3_SO-DIMM.jpg','Módulo SO-DIMM DDR3'],
+ ['RIMM','184 pines','RIMM (Rambus)','Memoria Rambus con disipador. Las ranuras vacías necesitaban un módulo de continuidad (C-RIMM).','RDRAM-und-sein-CRIMM.jpg','Módulo RIMM y su C-RIMM']];
+var gi=0;function gDraw(){var g=G[gi];$('g-tabs').innerHTML=G.map(function(x,i){return '<button data-gi="'+i+'" aria-pressed="'+(i===gi)+'">'+x[0]+'</button>'}).join('');
+  [].forEach.call($('g-tabs').children,function(b){b.onclick=function(){gi=+b.dataset.gi;gDraw()}});
+  Kit.setPhoto($('g-img'),'E',CRED,g[4]);$('g-img').alt=g[5];$('g-alt').textContent=g[5];$('g-cap').textContent=g[5];$('g-k').textContent=g[1].toUpperCase();$('g-h').textContent=g[2];$('g-p').textContent=g[3]}
+gDraw();
+Kit.credits($('creds'),CRED,G.map(function(g){return [g[4],g[5]]}));
+
+/* ---------- paridad / ECC ---------- */
+var DATA=[1,0,1,1,0,0,1,0],bits,mode='par',errAt=-1;
+function pr(){bits=DATA.slice();errAt=-1;prDraw();$('par-msg').textContent={none:'Sin ECC: 8 bits de datos y nada más. Simula un error.',par:'Paridad par: el bit P hace que la cantidad de unos sea par. Simula un error.',ecc:'ECC: bits adicionales que permiten saber cuál bit cambió. Simula un error.'}[mode]}
+function ones(a){return a.reduce(function(s,x){return s+x},0)}
+function prDraw(){press($('pm'),'data-pm',mode);var p=ones(DATA)%2;
+  var h=bits.map(function(b,i){return '<button class="'+(i===errAt?'err':'')+'" data-bi="'+i+'" aria-label="Bit '+i+'">'+b+'</button>'}).join('');
+  if(mode!=='none')h+='<button class="p" aria-label="Bit de control">'+(mode==='par'?'P '+p:'ECC')+'</button>';$('br').innerHTML=h}
+[].forEach.call($('pm').children,function(b){b.onclick=function(){mode=b.dataset.pm;pr()}});
+$('flip').onclick=function(){if(errAt>=0)return;errAt=Math.floor(Math.random()*8);bits[errAt]^=1;prDraw();
+  if(mode==='none')$('par-msg').textContent='El bit '+errAt+' cambió y nadie se enteró: el programa usa un dato equivocado. Puede causar un error o un pantallazo azul.';
+  if(mode==='par')$('par-msg').textContent='Ahora hay '+ones(bits)+' unos (impar): la paridad detecta que hay un error, pero no sabe cuál bit es. No lo puede corregir.';
+  if(mode==='ecc'){$('par-msg').textContent='ECC detecta que el bit '+errAt+' cambió y lo corrige automáticamente. El sistema sigue sin problema.';
+    setTimeout(function(){bits[errAt]^=1;var b=$('br').querySelector('[data-bi="'+errAt+'"]');if(b){b.textContent=bits[errAt];b.className='fix'}},900)}};
+$('pr').onclick=pr;pr();
+
+/* ---------- canales ---------- */
+var ins={};
+[].forEach.call($('mbd').querySelectorAll('.sl'),function(b){b.setAttribute('aria-pressed','false');b.onclick=function(){ins[b.dataset.s]=!ins[b.dataset.s];b.classList.toggle('in',ins[b.dataset.s]);b.setAttribute('aria-pressed',!!ins[b.dataset.s]);chDraw()}});
+function chDraw(){var s=Object.keys(ins).filter(function(k){return ins[k]}).sort(),n=s.length,a=s.filter(function(k){return k[0]==='A'}).length,b=n-a,dual=a>0&&b>0,v,l,m;
+  if(!n){v='—';l='Sin módulos instalados.';m='Con dos módulos, la mayoría de los fabricantes recomienda A2 y B2. Confirma siempre en el manual.'}
+  else{v=(dual?(a===b?'Doble canal':'Doble canal parcial'):'Un canal');l=n+' módulo'+(n>1?'s':'')+' · '+(dual?'51.2':'25.6')+' GB/s con DDR4-3200';
+    if(n===1)m=s[0]==='A2'?'Bien: con un módulo, A2 suele ser la recomendada.':'Funciona, pero el manual suele recomendar A2 para un solo módulo.';
+    else if(n===2)m=dual?(s.join()==='A2,B2'?'¡Perfecto! A2 y B2: doble canal, la configuración recomendada.':'Doble canal, pero el manual suele recomendar A2 y B2 (la segunda y la cuarta desde la CPU).'):'¡Ojo! Los dos módulos están en el mismo canal ('+s[0][0]+'): trabaja en un solo canal. Mueve uno al otro canal.';
+    else if(n===3)m='Tres módulos: parte trabaja en doble canal y parte en uno. Mejor usa 2 o 4 iguales.';
+    else m='Cuatro módulos: doble canal con todas las ranuras. Algunas tarjetas bajan la velocidad con 4 módulos de doble rango.'}
+  $('chv').textContent=v;$('chl').textContent=l;$('chm').textContent=m}
+
+/* ---------- etiqueta ---------- */
+var LB=[[['4GB','Capacidad: 4 GB.'],['2Rx8','Dos rangos (doble cara), chips de 8 bits.'],['PC3','Generación: DDR3.'],['-10600','Ancho de banda: 10,600 MB/s = 1333 MT/s × 8 bytes.'],['S','S = SO-DIMM (de laptop).'],['-9-10-F2','Latencias y revisión del fabricante.']],
+ [['16GB','Capacidad: 16 GB.'],['2Rx8','Dos rangos, chips de 8 bits.'],['PC4','Generación: DDR4.'],['-3200','Velocidad: 3200 MT/s (25,600 MB/s).'],['AA','Combinación de tiempos estándar JEDEC.']]];
+var li=0;function lbDraw(){press($('lb-pick'),'data-l',li);$('lb').innerHTML=LB[li].map(function(x,i){return '<span tabindex="0" role="button" data-t="'+i+'">'+x[0]+'</span>'}).join('');
+  [].forEach.call($('lb').children,function(s){s.onclick=s.onkeydown=function(e){if(e.type==='keydown'&&e.key!=='Enter')return;press($('lb'),'data-t',s.dataset.t);$('lb-msg').textContent=LB[li][+s.dataset.t][1]}});$('lb-msg').textContent='Toca cada parte de la etiqueta.'}
+[].forEach.call($('lb-pick').children,function(b){b.onclick=function(){li=+b.dataset.l;lbDraw()}});lbDraw();
+
+/* ---------- latencia ---------- */
+function gen(mt){return mt>=4800?'DDR5':'DDR4'}
+var SP=[2133,2400,2666,2933,3200,3600,4800,5200,5600,6000,6400];
+function lat(){var m1=SP[+$('m1').value],c1=+$('c1').value,m2=SP[+$('m2').value],c2=+$('c2').value;
+  $('m1v').textContent=m1+' MT/s';$('c1v').textContent='CL'+c1;$('m2v').textContent=m2+' MT/s';$('c2v').textContent='CL'+c2;
+  var n1=c1*2000/m1,n2=c2*2000/m2;$('ns1').textContent=n1.toFixed(1)+' ns';$('ns2').textContent=n2.toFixed(1)+' ns';
+  var g1=gen(m1),g2=gen(m2),t;
+  if(g1!==g2)t='No se pueden mezclar: '+g1+' y '+g2+' son generaciones distintas.';
+  else{var lo=Math.min(m1,m2);t='Si los instalas juntos, ambos trabajan a '+lo+' MT/s (la del más lento) y con la latencia mayor. Mejor usa pares idénticos.'}
+  $('mix').textContent=t}
+['m1','c1','m2','c2'].forEach(function(id){$(id).oninput=lat});lat();
+
+/* ---------- diagnóstico ---------- */
+[['Pitidos y no da imagen','Módulo mal asentado o dañado.','Reasienta la memoria; prueba un módulo a la vez.'],
+ ['Pantallazos azules aleatorios','Módulo defectuoso o perfil XMP inestable.','Haz una prueba de memoria; desactiva XMP o EXPO.'],
+ ['Windows muestra menos memoria','SO de 32 bits, memoria reservada para la GPU integrada o un módulo mal puesto.','Revisa el tipo de sistema, el BIOS y las ranuras.'],
+ ['Muy lento con varios programas','RAM insuficiente: Windows usa el disco como memoria virtual.','Amplía la memoria.'],
+ ['No arranca tras añadir memoria','Incompatible: tipo, velocidad o rangos.','Verifica la lista QVL de la tarjeta madre y las especificaciones.']
+].forEach(function(d){var b=document.createElement('button');b.textContent=d[0];b.setAttribute('aria-pressed','false');b.onclick=function(){
+  [].forEach.call($('dx').children,function(x){x.setAttribute('aria-pressed',x===b)});$('dx-k').textContent='CAUSA PROBABLE';$('dx-h').textContent=d[0];$('dx-c').textContent=d[1];$('dx-s').textContent='Qué hacer: '+d[2]};$('dx').appendChild(b)});
+
+/* ---------- ejercicio ---------- */
+Kit.quiz($('qz'),[
+ ['¿Qué diferencia hay entre la memoria con paridad y la ECC?',['Son iguales','La paridad solo detecta el error; ECC lo detecta y lo corrige','La ECC es más lenta y no corrige','La paridad corrige y ECC solo detecta'],1,'ECC corrige errores de un bit; la paridad solo avisa que hay uno.'],
+ ['Instalas un DDR4-3200 y un DDR4-2666 juntos. ¿A qué velocidad trabajan?',['3200 MT/s','2666 MT/s','5866 MT/s','No funcionan'],1,'Todos trabajan a la velocidad del módulo más lento.'],
+ ['¿Qué significa «PC4-3200AA» en una etiqueta?',['DDR3 a 3200 MB/s','DDR4 a 3200 MT/s con tiempos JEDEC AA','Cuatro módulos de 3200','PCIe 4.0'],1,'PC4 = DDR4; 3200 MT/s; AA = tiempos estándar.'],
+ ['Tienes dos módulos y cuatro ranuras. ¿Dónde los pones para doble canal?',['A1 y A2','B1 y B2','Normalmente A2 y B2, según el manual','Da igual'],2,'Un módulo en cada canal; el manual suele indicar A2 y B2.'],
+ ['¿Cuál es la latencia real de DDR4-3200 CL16?',['16 ns','10 ns','3.2 ns','32 ns'],1,'16 × 2000 ÷ 3200 = 10 ns.'],
+ ['¿Por qué no entra un DDR4 en una ranura DDR5 si ambos tienen 288 pines?',['Porque el DDR5 es más grande','Porque la muesca está en otra posición','Porque el DDR4 usa más voltaje y se traba','Sí entra'],1,'La muesca de guía está en otro lugar para impedir instalar una memoria incompatible.']
+]);
+
+Deck.start();
+})();
+</script>
+</body>
+</html>
