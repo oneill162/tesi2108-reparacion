@@ -1,0 +1,614 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Unidad B: La tarjeta madre · TESI 2108</title>
+<meta name="description" content="TESI 2108 Reparación de Computadoras. Unidad B: la tarjeta madre, sus componentes, buses, configuración y diagnóstico, con el tema de una placa de circuito.">
+<link rel="preload" href="assets/fonts/schibsted-grotesk-latin-800-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="assets/deck.css">
+<style>
+/* Tema de la Unidad B: la placa de circuito. Máscara de soldadura verde, pistas de cobre y serigrafía blanca. */
+:root{--ground:#EEF2EE;--tone:#DCE5DD;--tone2:#C7D5C9;--ink:#0F2A1E;--soft:#3F5548;--accent:#0F5A3A;--accent-ink:#fff;--field:#0D4A31;--field-ink:#F2F7F3;--hi:#FFC425;--cu:#C9873A;--pcb:#0D4A31}
+#bar{background:#0A3624}
+#map button.ch{background:transparent;box-shadow:inset 0 0 0 3px var(--cu)}
+#map button.ch.seen{background:var(--cu)}
+#map button.cur,#map button.ch.cur{background:var(--hi);box-shadow:none}
+
+/* capítulos: la placa */
+.slide.chapter{background:var(--pcb)}
+.board{position:absolute;inset:0;overflow:hidden}
+.board svg.traces{position:absolute;inset:0;width:100%;height:100%}
+.board .traces path{fill:none;stroke:var(--cu);stroke-width:5;stroke-linecap:round;stroke-linejoin:round;opacity:.55}
+.board .traces circle{fill:var(--pcb);stroke:var(--cu);stroke-width:5;opacity:.8}
+@media (prefers-reduced-motion:no-preference){
+  .entering .traces path{stroke-dasharray:1400;stroke-dashoffset:1400;animation:trace 1.4s var(--ease-out) .15s forwards}
+}
+@keyframes trace{to{stroke-dashoffset:0}}
+.board .inner{position:absolute;left:80px;top:64px;right:80px;bottom:64px;display:flex;flex-direction:column}
+.silk{font:600 22px var(--mono);color:#fff;opacity:.9}
+.board .ch-title{font-size:90px;line-height:.98;letter-spacing:-.035em;font-weight:800;max-width:820px;margin-top:16px}
+.board .what{font-size:27px;line-height:1.38;max-width:700px;margin-top:24px;opacity:.88}
+.board .chip-row{margin-top:auto;display:flex;gap:10px}
+.board .chip-row span{width:150px;height:56px;background:#111;color:rgba(255,255,255,.5);display:flex;align-items:center;justify-content:center;font:600 18px var(--mono);position:relative}
+.board .chip-row span::before,.board .chip-row span::after{content:"";position:absolute;left:10px;right:10px;height:6px;background:repeating-linear-gradient(90deg,#BFC4C8 0 6px,transparent 6px 12px)}
+.board .chip-row span::before{top:-6px}.board .chip-row span::after{bottom:-6px}
+.board .chip-row span.on{background:#1b1b1b;color:var(--hi)}
+.board .obra{position:absolute;right:80px;top:64px;width:340px;height:340px;background:#fff;padding:12px}
+.board .obra img{width:100%;height:100%;object-fit:cover;display:block}
+
+/* fichas */
+.ficha{background:#fff;padding:22px 26px}
+.ficha .rd{font:600 18px var(--mono);color:var(--cu)}
+.ficha h3{margin-top:4px}
+.ficha p{font-size:21px;line-height:1.4;margin-top:8px;color:var(--soft)}
+.grid4{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+figure.foto{margin:0;background:#fff;padding:12px;display:flex;flex-direction:column}
+figure.foto .ph{flex:1;min-height:0;position:relative;background:var(--tone);overflow:hidden}
+figure.foto img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+figure.foto.contain img{object-fit:contain;background:#fff}
+figure.foto figcaption{font-size:15px;line-height:1.3;margin-top:8px;color:var(--soft)}
+figure.foto .ph .alt{position:absolute;inset:0;display:none;align-items:center;justify-content:center;text-align:center;padding:16px;font-size:20px;font-weight:600;color:var(--soft)}
+figure.foto.nofoto .ph .alt{display:flex}
+.msg{background:#fff;padding:14px 18px;font-size:21px;min-height:56px;margin-top:16px}
+.stat{background:var(--field);color:var(--field-ink);padding:20px 24px}
+.stat .v{font-size:50px;font-weight:800;letter-spacing:-.03em;line-height:1.05;color:var(--hi)}
+.stat .l{font-size:19px;margin-top:6px}
+
+/* mapa interactivo de la placa */
+.mapwrap{display:grid;grid-template-columns:600px 1fr;gap:28px;margin-top:18px}
+.mb{position:relative;width:600px;height:500px;background:var(--pcb)}
+.mb button{position:absolute;padding:0;font:600 15px var(--sans);color:#fff;display:flex;align-items:center;justify-content:center;text-align:center;line-height:1.1;border:3px solid transparent}
+.mb button:hover,.mb button[aria-pressed=true]{border-color:var(--hi);background-clip:padding-box}
+.mb button[aria-pressed=true]{outline:4px solid var(--hi)}
+.mb .lbl{position:absolute;font:600 13px var(--mono);color:rgba(255,255,255,.7)}
+.mapinfo .ficha{min-height:300px}
+.mapinfo .ficha h3{font-size:34px}
+.mapinfo .ficha p{font-size:23px}
+
+/* factores de forma */
+.ffs{display:flex;align-items:flex-end;gap:16px;height:380px;margin-top:20px}
+.ff{position:relative;background:var(--pcb);color:#fff;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;transition:transform .5s var(--ease-expo)}
+.ff small{position:absolute;bottom:-34px;left:0;right:0;text-align:center;color:var(--soft);font-size:17px;font-weight:600}
+.ff .hole{position:absolute;width:12px;height:12px;border-radius:50%;background:#F2F7F3;border:3px solid var(--cu)}
+
+/* PCIe */
+.pcie{display:grid;grid-template-columns:1fr 1fr;gap:28px;margin-top:20px}
+.slotviz{background:var(--pcb);padding:22px;height:230px;position:relative}
+.slotviz .sl{position:absolute;left:22px;height:30px;background:#111}
+.slotviz .sl i{position:absolute;inset:6px 6px;background:repeating-linear-gradient(90deg,#C9873A 0 3px,transparent 3px 6px)}
+.slotviz .card{position:absolute;left:22px;height:46px;background:#3B6E9C;transition:width .4s var(--ease-expo)}
+.slotviz .lbl{position:absolute;font:600 15px var(--mono);color:#fff;right:22px}
+.seg{display:flex;gap:8px;flex-wrap:wrap}
+.seg button{font-size:20px}
+
+/* chipset */
+.cs{position:relative;height:430px;margin-top:16px}
+.cs .bx{position:absolute;background:#fff;padding:12px 16px;font-size:19px;transition:all .6s var(--ease-expo)}
+.cs .bx b{display:block;font-size:24px}
+.cs .bx.dark{background:var(--field);color:var(--field-ink)}
+.cs .bx.dark b{color:var(--hi)}
+.cs svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.cs svg path{stroke:var(--cu);stroke-width:6;fill:none;transition:opacity .4s}
+
+/* BIOS simulado */
+.bios{background:#0A2A5E;color:#DDE6F5;font:500 21px var(--mono);height:440px;margin-top:18px;display:grid;grid-template-rows:auto 1fr auto}
+.bios .top{display:flex;background:#0D3B82}
+.bios .top button{font:600 19px var(--mono);background:transparent;color:#DDE6F5;padding:10px 18px}
+.bios .top button[aria-pressed=true]{background:#DDE6F5;color:#0A2A5E}
+.bios .body{padding:18px 24px;display:grid;grid-template-columns:1fr 330px;gap:24px}
+.bios .help{border-left:3px solid #3E63A8;padding-left:18px;font-size:18px;color:#A9BBDD;font-family:var(--sans);line-height:1.4}
+.bios .row{display:flex;justify-content:space-between;padding:5px 8px}
+.bios .row.sel{background:#DDE6F5;color:#0A2A5E}
+.bios .boot li{display:flex;justify-content:space-between;align-items:center;padding:4px 8px;margin-bottom:6px;background:#11397A}
+.bios .boot li button{font:600 16px var(--mono);padding:4px 10px;background:#3E63A8;color:#fff;margin-left:6px}
+.bios ol{list-style:none;margin:0;padding:0}
+.bios .foot{background:#0D3B82;padding:6px 18px;font-size:16px;color:#A9BBDD}
+
+/* sorter / chips */
+.chips{display:flex;flex-wrap:wrap;gap:12px}
+.chip{font:600 21px var(--sans);padding:12px 18px;background:#fff;color:var(--ink)}
+.chip.sel{background:var(--ink);color:var(--ground)}
+.chip.ok{background:#2E9E6B;color:#fff}
+.chip.bad{background:#C0392B;color:#fff}
+.bins{display:grid;gap:14px;margin-top:20px}
+.bin{background:var(--tone);padding:16px 18px;min-height:150px}
+.bin h3{font-size:24px}
+.bin .in{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.bin .in span{font-size:18px;font-weight:600;background:#fff;padding:6px 10px}
+
+/* simulador de configuración mínima */
+.sim{display:grid;grid-template-columns:1fr 1fr;gap:28px;margin-top:18px}
+.parts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.parts button{text-align:left;font-size:20px;padding:14px 16px;background:#fff}
+.parts button[aria-pressed=true]{background:var(--accent);color:#fff}
+.screen{white-space:pre-line;background:#000;height:250px;display:flex;align-items:center;justify-content:center;color:#7DF59A;font:600 22px var(--mono);text-align:center;padding:20px}
+.leds{display:flex;gap:10px;margin-top:12px}
+.leds span{flex:1;background:#fff;padding:8px;text-align:center;font:600 16px var(--mono);color:var(--soft)}
+.leds span.lit{background:#C0392B;color:#fff}
+
+/* diagnóstico */
+.dx{display:grid;grid-template-columns:420px 1fr;gap:24px;margin-top:18px}
+.dx .list{display:flex;flex-direction:column;gap:10px}
+.dx .list button{text-align:left;font-size:20px;padding:14px 16px;background:#fff}
+.dx .list button[aria-pressed=true]{background:var(--ink);color:var(--ground)}
+.dx .ans{background:#fff;padding:24px 28px;min-height:360px}
+.dx .ans .k{font:600 17px var(--mono);color:var(--cu)}
+.dx .ans p{font-size:23px;margin-top:6px}
+
+/* quiz */
+.quiz{margin-top:16px}
+.quiz .qz-q{font-size:30px;font-weight:700;line-height:1.2;min-height:76px}
+.quiz .ops{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+.quiz .ops button{text-align:left;font-size:22px;padding:16px 18px;background:#fff}
+.quiz .ops button.ok{background:#2E9E6B;color:#fff}
+.quiz .ops button.bad{background:#C0392B;color:#fff}
+.quiz .why{font-size:21px;margin-top:14px;min-height:62px;background:var(--tone);padding:12px 16px}
+.quiz .foot{display:flex;justify-content:space-between;align-items:center;margin-top:14px;font-size:21px;font-weight:600}
+.dots{display:flex;gap:6px}.dots i{width:22px;height:10px;background:var(--tone2)}.dots i.ok{background:#2E9E6B}.dots i.bad{background:#C0392B}.dots i.cur{background:var(--ink)}
+
+.discrow{position:absolute;left:72px;right:72px;bottom:40px}
+.field-hi .q{font-size:56px;line-height:1.05;letter-spacing:-.03em;font-weight:800;max-width:1100px}
+.cred-list{columns:2;column-gap:40px;font-size:15px;line-height:1.45;margin-top:14px;padding-left:22px}
+.cred-list a{color:var(--ink)}
+</style>
+</head>
+<body>
+<div id="viewport"><div id="stage" data-name="TESI 2108 · Unidad B">
+
+<!-- 1 portada -->
+<section class="slide chapter" data-title="Portada">
+  <div class="board">
+    <svg class="traces" viewBox="0 0 1280 664" aria-hidden="true"><path d="M0 560 H300 L360 500 H760 L820 440 H1280"/><path d="M0 610 H520 L560 570 H1280"/><path d="M1180 0 V180 L1120 240 V420"/><circle cx="360" cy="500" r="11"/><circle cx="820" cy="440" r="11"/><circle cx="1120" cy="420" r="11"/></svg>
+    <div class="inner">
+      <div class="silk" data-a>J1 · TESI 2108 · REV 2026</div>
+      <h1 class="mask" style="margin-top:20px;font-size:96px;max-width:760px"><span>Unidad B: La tarjeta madre</span></h1>
+      <p class="what" data-a>Semana 3 · lunes 31 de agosto de 2026<br>Prof. Eduardo O. De Jesús Arroyo · Instituto Tecnológico de Puerto Rico</p>
+      <div class="chip-row" data-a><span>U1</span><span>U2</span><span>U3</span><span>U4</span><span>U5</span></div>
+    </div>
+    <figure class="obra foto" data-a><div class="ph"><img data-cm="Atx_computer_motherboard_with_cpu_and_fan.jpg" alt="Tarjeta madre ATX con su procesador y ventilador"><div class="alt">Tarjeta madre ATX</div></div></figure>
+  </div>
+</section>
+
+<!-- 2 mapa -->
+<section class="slide" data-title="Mapa de la tarjeta madre">
+  <h2 class="mask"><span>Recorre la placa: toca cada parte</span></h2>
+  <div class="mapwrap">
+    <div class="mb" id="mb" data-a>
+      <button data-p="io" style="left:14px;top:14px;width:70px;height:190px;background:#1A1A1A">Panel I/O</button>
+      <button data-p="cpu" style="left:120px;top:40px;width:170px;height:150px;background:#2D2D2D">Socket CPU</button>
+      <button data-p="eps" style="left:120px;top:8px;width:110px;height:26px;background:#E8E8E8;color:#111">EPS 8</button>
+      <button data-p="ram" style="left:330px;top:18px;width:110px;height:210px;background:repeating-linear-gradient(90deg,#FFC425 0 16px,#0D4A31 16px 31px)"><span style="background:#0D4A31;padding:2px 6px">RAM</span></button>
+      <button data-p="atx" style="left:480px;top:30px;width:90px;height:140px;background:#E8E8E8;color:#111">ATX 24</button>
+      <button data-p="pcie" style="left:60px;top:280px;width:340px;height:28px;background:#111">PCIe x16</button>
+      <button data-p="pci" style="left:60px;top:345px;width:200px;height:24px;background:#F2F2F2;color:#111">PCIe x1</button>
+      <button data-p="m2" style="left:60px;top:400px;width:200px;height:28px;background:#555">M.2</button>
+      <button data-p="cmos" style="left:300px;top:345px;width:60px;height:60px;background:#C7CCD1;color:#111;border-radius:50%">CMOS</button>
+      <button data-p="chip" style="left:400px;top:330px;width:110px;height:100px;background:#0A2A1C;outline:2px solid var(--cu)">Chipset</button>
+      <button data-p="sata" style="left:530px;top:300px;width:50px;height:120px;background:#2E6BC0">SATA</button>
+      <button data-p="fp" style="left:400px;top:455px;width:180px;height:30px;background:#111">Panel frontal</button>
+    </div>
+    <div class="mapinfo" data-a>
+      <div class="ficha"><div class="rd" id="mb-rd">TOCA UNA PARTE</div><h3 id="mb-h">La tarjeta madre</h3><p id="mb-p">Es la placa principal: conecta la CPU, la memoria, el almacenamiento, las tarjetas y la fuente, y los comunica entre sí. Toca cada parte del esquema.</p></div>
+      <p class="small" style="margin-top:12px">Esquema simplificado: la posición exacta cambia por modelo. Revisa siempre el manual de la tarjeta.</p>
+    </div>
+  </div>
+</section>
+
+<!-- CAP 1 -->
+<section class="slide chapter" data-title="01 · Estructura y factores de forma">
+  <div class="board">
+    <svg class="traces" viewBox="0 0 1280 664" aria-hidden="true"><path d="M0 590 H420 L470 540 H1280"/><path d="M1000 0 V120 L940 180 V330"/><circle cx="470" cy="540" r="11"/><circle cx="940" cy="330" r="11"/></svg>
+    <div class="inner"><div class="silk" data-a>U1</div><h2 class="ch-title mask"><span>Estructura y factores de forma</span></h2><p class="what" data-a>ATX, Micro ATX y Mini-ITX: el tamaño decide la caja, las ranuras y los tornillos.</p>
+    <div class="chip-row" data-a><span class="on">U1</span><span>U2</span><span>U3</span><span>U4</span><span>U5</span></div></div>
+    <figure class="obra foto" data-a><div class="ph"><img data-cm="IBM_PC_Motherboard_(1981).jpg" alt="Tarjeta madre de la IBM PC de 1981"><div class="alt">Tarjeta madre IBM PC, 1981</div></div></figure>
+  </div>
+</section>
+
+<section class="slide" data-title="Factores de forma a escala">
+  <h2 class="mask"><span>Factores de forma, dibujados a escala</span></h2>
+  <div class="cols" style="grid-template-columns:1fr 340px;gap:28px">
+    <div>
+      <div class="ffs" id="ffs" data-a>
+        <div class="ff" data-ff="atx" style="width:300px;height:240px">ATX<small>305 × 244 mm · hasta 7 ranuras</small></div>
+        <div class="ff" data-ff="matx" style="width:240px;height:240px">Micro ATX<small>244 × 244 mm · hasta 4</small></div>
+        <div class="ff" data-ff="itx" style="width:168px;height:168px">Mini-ITX<small>170 × 170 mm · 1 ranura</small></div>
+      </div>
+    </div>
+    <div data-a>
+      <div class="ficha" style="min-height:250px"><h3 id="ff-h">¿Cabe en la caja?</h3><p id="ff-p">Escoge una caja y verás qué tarjetas acepta.</p></div>
+      <div class="seg" style="margin-top:14px"><button data-case="atx">Caja ATX</button><button data-case="matx">Caja Micro ATX</button><button data-case="itx">Caja Mini-ITX</button></div>
+    </div>
+  </div>
+</section>
+
+<!-- CAP 2 -->
+<section class="slide chapter" data-title="02 · Ranuras y chipset">
+  <div class="board">
+    <svg class="traces" viewBox="0 0 1280 664" aria-hidden="true"><path d="M0 540 H260 L310 590 H1280"/><path d="M1100 0 V260 L1040 320 V430"/><circle cx="310" cy="590" r="11"/><circle cx="1040" cy="430" r="11"/></svg>
+    <div class="inner"><div class="silk" data-a>U2</div><h2 class="ch-title mask"><span>Ranuras de expansión y chipset</span></h2><p class="what" data-a>PCI, PCI Express y el chip que administra todo lo demás.</p>
+    <div class="chip-row" data-a><span>U1</span><span class="on">U2</span><span>U3</span><span>U4</span><span>U5</span></div></div>
+    <figure class="obra foto" data-a><div class="ph"><img data-cm="GigabyteH170-HD3-PCH-and-Slots.jpg" alt="Chipset y ranuras PCIe de una tarjeta Gigabyte H170"><div class="alt">Chipset y ranuras PCIe</div></div></figure>
+  </div>
+</section>
+
+<section class="slide" data-title="PCI y PCIe">
+  <h2 class="mask"><span>De PCI a PCI Express</span></h2>
+  <div class="cols gap" style="grid-template-columns:330px 1fr;gap:28px;margin-top:22px">
+    <figure class="foto" data-a style="height:440px"><div class="ph"><img data-cm="Pci-slots.jpg" alt="Ranuras PCI blancas en una tarjeta madre antigua"><div class="alt">Ranuras PCI</div></div><figcaption>Ranuras PCI blancas: equipos antiguos.</figcaption></figure>
+    <div class="grid4" data-a>
+      <div class="ficha"><div class="rd">PCI · HEREDADO</div><h3>Bus paralelo compartido</h3><p>32 bits y 133 MB/s para todas las tarjetas juntas. Ranura blanca.</p></div>
+      <div class="ficha"><div class="rd">PCIe</div><h3>Enlaces seriales</h3><p>Cada tarjeta tiene su propio camino punto a punto, con carriles (lanes).</p></div>
+      <div class="ficha"><div class="rd">x1 · x4 · x8 · x16</div><h3>Carriles</h3><p>Más carriles, más ancho de banda. La x16 es para la tarjeta de video.</p></div>
+      <div class="ficha"><div class="rd">M.2 NVMe</div><h3>También es PCIe</h3><p>Los SSD NVMe usan carriles PCIe a través de la ranura M.2.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-title="Calculadora PCIe">
+  <h2 class="mask"><span>¿A qué velocidad trabaja la tarjeta?</span></h2>
+  <div class="pcie">
+    <div data-a>
+      <h3>Generación</h3><div class="seg" id="pg" style="margin-top:8px"><button data-g="3">PCIe 3.0</button><button data-g="4">PCIe 4.0</button><button data-g="5">PCIe 5.0</button></div>
+      <h3 style="margin-top:18px">Tarjeta</h3><div class="seg" id="pc" style="margin-top:8px"><button data-c="1">x1</button><button data-c="4">x4</button><button data-c="16">x16</button></div>
+      <h3 style="margin-top:18px">Ranura (cableada)</h3><div class="seg" id="ps" style="margin-top:8px"><button data-s="1">x1</button><button data-s="4">x4</button><button data-s="16">x16</button></div>
+    </div>
+    <div data-a>
+      <div class="slotviz" id="sv"><div class="sl" id="sv-sl" style="top:150px"><i></i></div><div class="card" id="sv-card" style="top:80px"></div><div class="lbl" id="sv-l1" style="top:94px">tarjeta</div><div class="lbl" id="sv-l2" style="top:184px">ranura</div></div>
+      <div class="stat" style="margin-top:14px"><div class="v" id="pv">≈ 16 GB/s</div><div class="l" id="pl">por dirección</div></div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-title="El chipset: antes y hoy">
+  <h2 class="mask"><span>El chipset: antes y hoy</span></h2>
+  <div class="cols" style="grid-template-columns:1fr 330px;gap:24px">
+    <div class="cs" id="cs" data-a>
+      <svg viewBox="0 0 780 430"><path id="cs-l1" d="M190 70 H330"/><path id="cs-l2" d="M110 120 V250"/><path id="cs-l3" d="M190 300 H330"/><path id="cs-l4" d="M190 280 L330 160"/></svg>
+      <div class="bx dark" id="b-cpu" style="left:0;top:20px;width:190px;height:100px"><b>CPU</b><span id="b-cpu-t">Solo procesa</span></div>
+      <div class="bx" id="b-nb" style="left:0;top:250px;width:190px;height:100px"><b id="b-nb-h">Puente norte</b><span id="b-nb-t">Memoria y video</span></div>
+      <div class="bx" id="b-ram" style="left:330px;top:20px;width:200px;height:100px"><b>RAM</b>Memoria</div>
+      <div class="bx" id="b-vid" style="left:330px;top:140px;width:200px;height:90px"><b>PCIe x16</b>Video</div>
+      <div class="bx" id="b-sb" style="left:330px;top:250px;width:200px;height:100px"><b id="b-sb-h">Puente sur</b><span id="b-sb-t">USB, SATA, audio</span></div>
+    </div>
+    <div data-a>
+      <div class="seg"><button class="go" id="cs-old" aria-pressed="true">Antes</button><button id="cs-new">Hoy</button></div>
+      <div class="ficha" style="margin-top:14px;min-height:300px"><h3 id="cs-h">Dos puentes</h3><p id="cs-p">El puente norte controlaba la memoria y el video; el sur, los dispositivos lentos. La CPU llegaba a todo por el FSB.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- CAP 3 -->
+<section class="slide chapter" data-title="03 · Conectores y cabezales">
+  <div class="board">
+    <svg class="traces" viewBox="0 0 1280 664" aria-hidden="true"><path d="M0 500 H200 L250 550 H700 L760 610 H1280"/><path d="M960 0 V200 L1020 260 V460"/><circle cx="250" cy="550" r="11"/><circle cx="1020" cy="460" r="11"/></svg>
+    <div class="inner"><div class="silk" data-a>U3</div><h2 class="ch-title mask"><span>Conectores y cabezales</span></h2><p class="what" data-a>Socket, memoria, energía, ventiladores, jumpers y panel frontal.</p>
+    <div class="chip-row" data-a><span>U1</span><span>U2</span><span class="on">U3</span><span>U4</span><span>U5</span></div></div>
+    <figure class="obra foto" data-a><div class="ph"><img data-cm="Intel_LGA1200_Socket.jpg" alt="Socket Intel LGA 1200 con sus contactos"><div class="alt">Socket LGA 1200</div></div></figure>
+  </div>
+</section>
+
+<section class="slide" data-title="LGA y PGA">
+  <h2 class="mask"><span>Sockets: ¿dónde están los pines?</span></h2>
+  <div class="grid3 gap" style="margin-top:22px">
+    <figure class="foto" data-a style="height:300px"><div class="ph"><img data-cm="Intel_LGA1200_Socket.jpg" alt="Socket Intel LGA 1200"><div class="alt">Socket LGA</div></div><figcaption>LGA: los pines están en el socket (Intel LGA 1200).</figcaption></figure>
+    <figure class="foto" data-a style="height:300px"><div class="ph"><img data-cm="Socket_AM4.jpg" alt="Socket AMD AM4 con orificios"><div class="alt">Socket PGA</div></div><figcaption>PGA: el socket tiene orificios (AMD AM4).</figcaption></figure>
+    <figure class="foto" data-a style="height:300px"><div class="ph"><img data-cm="AMD_Ryzen_7_3700X_pins_IMGP3168_smial_wp.jpg" alt="Pines de un procesador AMD Ryzen 7 3700X"><div class="alt">Pines de la CPU</div></div><figcaption>…y los pines están en la CPU (Ryzen 7 3700X).</figcaption></figure>
+  </div>
+  <div class="msg" data-a style="font-size:22px"><b>Al instalar:</b> alinea el triángulo dorado de la CPU con la marca del socket, cierra la palanca ZIF y nunca hagas presión. Hoy: Intel LGA 1700 y 1851; AMD AM5 también es LGA.</div>
+</section>
+
+<section class="slide" data-title="Ranuras de memoria">
+  <h2 class="mask"><span>Ranuras de memoria: la muesca manda</span></h2>
+  <div class="cols" style="grid-template-columns:1fr 1fr;gap:28px;margin-top:22px">
+    <table class="t" data-a><tr><th>Tipo</th><th>Pines</th><th>Voltaje</th></tr>
+      <tr><td>DDR</td><td>184</td><td>2.5 V</td></tr><tr><td>DDR2</td><td>240</td><td>1.8 V</td></tr><tr><td>DDR3</td><td>240</td><td>1.5 V</td></tr><tr><td>DDR4</td><td>288</td><td>1.2 V</td></tr><tr><td>DDR5</td><td>288</td><td>1.1 V</td></tr></table>
+    <div data-a>
+      <figure class="foto" style="height:250px"><div class="ph"><img data-cm="DDR4_DIMM_4GB_-2133_IMGP5813_smial_wp.jpg" alt="Módulo DDR4 visto por ambas caras, con regla"><div class="alt">Módulo DDR4</div></div><figcaption>Módulo DDR4: la muesca está fuera del centro.</figcaption></figure>
+      <p class="body" style="margin-top:14px">Cada generación tiene la muesca en otro lugar para que no se pueda instalar una memoria incompatible. DDR4 y DDR5 tienen 288 pines, pero no son intercambiables.</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-title="Energía, ventiladores y jumpers">
+  <h2 class="mask"><span>Energía, ventiladores y jumpers</span></h2>
+  <div class="cols" style="grid-template-columns:330px 1fr;gap:24px;margin-top:20px">
+    <div data-a>
+      <figure class="foto" style="height:215px"><div class="ph"><img data-cm="ATX_Power_connectors.jpg" alt="Conectores ATX de 24 y 4 pines"><div class="alt">Conector ATX</div></div><figcaption>ATX de 24 pines y de 4 pines.</figcaption></figure>
+      <figure class="foto contain" style="height:200px;margin-top:12px"><div class="ph"><img data-cm="ATX12V_EPS12V_(8-pin).jpg" alt="Conector EPS de 8 pines para la CPU"><div class="alt">Conector EPS</div></div><figcaption>EPS de 8 pines para la CPU.</figcaption></figure>
+    </div>
+    <div class="grid4" data-a>
+      <div class="ficha"><div class="rd">ATX_24P</div><h3>Energía principal</h3><p>Alimenta toda la tarjeta madre.</p></div>
+      <div class="ficha"><div class="rd">CPU_8P</div><h3>Energía de la CPU</h3><p>12 V junto al socket. Olvidarlo: ventiladores giran, pero no hay imagen.</p></div>
+      <div class="ficha"><div class="rd">CPU_FAN · SYS_FAN</div><h3>Ventiladores</h3><p>3 pines (voltaje) o 4 pines (PWM). CPU_FAN es obligatorio.</p></div>
+      <div class="ficha"><div class="rd">CLR_CMOS</div><h3>Jumpers</h3><p>Puentes de configuración. CLR_CMOS borra el BIOS con el equipo desconectado.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-title="Panel frontal: ¿tiene polaridad?">
+  <h2 class="mask"><span>Panel frontal: ¿con o sin polaridad?</span></h2>
+  <p class="body sub" data-a>Toca un cable de la caja y luego dónde va. Los LED tienen + y –; los botones no.</p>
+  <div class="chips" id="fp-chips" data-a style="margin-top:16px"></div>
+  <div class="bins" data-a style="grid-template-columns:repeat(3,1fr)">
+    <div class="bin" data-bin="np"><h3>F_PANEL sin polaridad</h3><p class="small">Botones: da igual el orden</p><div class="in"></div></div>
+    <div class="bin" data-bin="p"><h3>F_PANEL con polaridad</h3><p class="small">LED: + con +</p><div class="in"></div></div>
+    <div class="bin" data-bin="h"><h3>Otro cabezal</h3><p class="small">USB y audio</p><div class="in"></div></div>
+  </div>
+  <div class="msg" id="fp-msg">El orden de los pines cambia por fabricante: el manual siempre manda.</div>
+</section>
+
+<!-- CAP 4 -->
+<section class="slide chapter" data-title="04 · Buses, CPU y UEFI/BIOS">
+  <div class="board">
+    <svg class="traces" viewBox="0 0 1280 664" aria-hidden="true"><path d="M0 600 H380 L430 550 H1280"/><path d="M1160 0 V300 L1100 360 V470"/><circle cx="430" cy="550" r="11"/><circle cx="1100" cy="470" r="11"/></svg>
+    <div class="inner"><div class="silk" data-a>U4</div><h2 class="ch-title mask"><span>Buses, CPU y configuración</span></h2><p class="what" data-a>Los caminos de los datos, la estructura del procesador y el firmware UEFI/BIOS.</p>
+    <div class="chip-row" data-a><span>U1</span><span>U2</span><span>U3</span><span class="on">U4</span><span>U5</span></div></div>
+    <figure class="obra foto" data-a><div class="ph"><img data-cm="CR2032_in_mainboard.jpg" alt="Pila CR2032 en su base de la tarjeta madre"><div class="alt">Pila CMOS</div></div></figure>
+  </div>
+</section>
+
+<section class="slide" data-title="Velocidad de un bus">
+  <h2 class="mask"><span>Capacidad de un bus = ancho × velocidad</span></h2>
+  <div class="cols" style="grid-template-columns:1fr 1fr;gap:32px;margin-top:22px">
+    <div data-a>
+      <h3>Memoria</h3><div class="seg" id="bm" style="margin-top:8px"><button data-mt="2666">DDR4-2666</button><button data-mt="3200">DDR4-3200</button><button data-mt="4800">DDR5-4800</button><button data-mt="6000">DDR5-6000</button></div>
+      <h3 style="margin-top:20px">Canales</h3><div class="seg" id="bc" style="margin-top:8px"><button data-ch="1">1 canal</button><button data-ch="2">2 canales</button></div>
+      <div class="ficha" style="margin-top:20px"><h3>Tipos de bus</h3><p><b>FSB:</b> CPU ↔ puente norte (antiguo) · <b>Bus de memoria:</b> CPU ↔ RAM · <b>Bus de expansión:</b> PCIe.</p></div>
+    </div>
+    <div data-a>
+      <div class="stat"><div class="v" id="bv">25.6 GB/s</div><div class="l" id="bl">3200 MT/s × 8 bytes × 1 canal</div></div>
+      <p class="body" style="margin-top:16px">Cada canal de memoria tiene 64 bits (8 bytes). Con dos módulos iguales en las ranuras correctas, el ancho de banda se duplica.</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-title="Estructura de la CPU">
+  <h2 class="mask"><span>Por dentro del procesador</span></h2>
+  <div class="grid4 gap">
+    <div class="ficha" data-a><div class="rd">CORE</div><h3>Núcleos</h3><p>Cada uno ejecuta instrucciones con su ALU y su unidad de control.</p></div>
+    <div class="ficha" data-a><div class="rd">L1 · L2 · L3</div><h3>Caché</h3><p>Memoria muy rápida dentro de la CPU para los datos más usados.</p></div>
+    <div class="ficha" data-a><div class="rd">IMC · PCIe · iGPU</div><h3>Controladores integrados</h3><p>Memoria, PCIe y, en muchos modelos, gráficos integrados.</p></div>
+    <div class="ficha" data-a><div class="rd">IHS</div><h3>Tapa y sustrato</h3><p>La tapa lleva el calor al disipador; el sustrato tiene los contactos.</p></div>
+  </div>
+  <p class="small sub">La Unidad D (semana 5) profundiza en procesadores.</p>
+</section>
+
+<section class="slide" data-title="Configuración UEFI/BIOS">
+  <h2 class="mask"><span>Practica en un UEFI/BIOS simulado</span></h2>
+  <div class="bios" id="bios" data-a>
+    <div class="top"><button data-bt="main" aria-pressed="true">Main</button><button data-bt="boot">Boot</button><button data-bt="sec">Security</button><button data-bt="exit">Save &amp; Exit</button></div>
+    <div class="body">
+      <div id="bios-panel"></div>
+      <div class="help" id="bios-help"></div>
+    </div>
+    <div class="foot">Simulación para practicar · Supr, F2 o F10 abren el UEFI/BIOS real según el fabricante</div>
+  </div>
+</section>
+
+<!-- CAP 5 -->
+<section class="slide chapter" data-title="05 · Fallas y diagnóstico">
+  <div class="board">
+    <svg class="traces" viewBox="0 0 1280 664" aria-hidden="true"><path d="M0 560 H340 L390 610 H1280"/><path d="M1060 0 V160 L1000 220 V420"/><circle cx="390" cy="610" r="11"/><circle cx="1000" cy="420" r="11"/></svg>
+    <div class="inner"><div class="silk" data-a>U5</div><h2 class="ch-title mask"><span>Fallas y diagnóstico</span></h2><p class="what" data-a>Síntomas, configuración mínima y buenas prácticas de instalación.</p>
+    <div class="chip-row" data-a><span>U1</span><span>U2</span><span>U3</span><span>U4</span><span class="on">U5</span></div></div>
+    <figure class="obra foto" data-a><div class="ph"><img data-cm="Nichicon_2200uF_6.3V_swollen_leaking_capacitors_Compaq_year_2001_motherboard.jpg" alt="Capacitores hinchados y con fugas en una tarjeta madre"><div class="alt">Capacitores hinchados</div></div></figure>
+  </div>
+</section>
+
+<section class="slide" data-title="Diagnostica el síntoma">
+  <h2 class="mask"><span>¿Qué revisas primero?</span></h2>
+  <div class="dx">
+    <div class="list" id="dx" data-a></div>
+    <div class="ans" data-a><div class="k" id="dx-k">SÍNTOMA</div><h3 id="dx-h" style="font-size:30px">Escoge un síntoma</h3><p id="dx-c"></p><p id="dx-s" style="color:var(--soft)"></p>
+      <figure class="foto" id="dx-fig" style="height:170px;margin-top:12px;display:none"><div class="ph"><img id="dx-img" alt=""><div class="alt"></div></div></figure></div>
+  </div>
+</section>
+
+<section class="slide" data-title="Simulador: configuración mínima">
+  <h2 class="mask"><span>Simulador: la configuración mínima</span></h2>
+  <div class="sim">
+    <div data-a>
+      <p class="body">Activa lo que está conectado y pulsa <b>Encender</b>. Encuentra la configuración mínima que da imagen.</p>
+      <div class="parts" id="parts" style="margin-top:14px">
+        <button data-pt="atx" aria-pressed="true">ATX de 24 pines</button><button data-pt="eps" aria-pressed="false">EPS de la CPU</button>
+        <button data-pt="cpu" aria-pressed="true">CPU con disipador</button><button data-pt="ram" aria-pressed="false">Un módulo de RAM</button>
+        <button data-pt="vid" aria-pressed="false">Monitor en el puerto correcto</button><button data-pt="fp" aria-pressed="true">Botón del panel frontal</button>
+      </div>
+      <div class="row" style="margin-top:14px"><button class="go" id="pw">Encender</button></div>
+    </div>
+    <div data-a>
+      <div class="screen" id="scr">Monitor apagado</div>
+      <div class="leds"><span data-led="cpu">CPU</span><span data-led="dram">DRAM</span><span data-led="vga">VGA</span><span data-led="boot">BOOT</span></div>
+      <div class="msg" id="sim-msg">Las tarjetas modernas tienen LED de diagnóstico: el que se queda encendido indica la falla.</div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-title="Buenas prácticas">
+  <h2 class="mask"><span>Buenas prácticas al instalar</span></h2>
+  <div class="cols" style="grid-template-columns:1fr 380px;gap:24px;margin-top:20px">
+    <div class="grid4" data-a>
+      <div class="ficha"><div class="rd">STANDOFF</div><h3>Separadores correctos</h3><p>Solo donde hay agujeros: uno de más puede causar un corto.</p></div>
+      <div class="ficha"><div class="rd">I/O SHIELD</div><h3>Placa de I/O primero</h3><p>Va en la caja antes que la tarjeta madre.</p></div>
+      <div class="ficha"><div class="rd">CPU · RAM</div><h3>Instálalos afuera</h3><p>Con la tarjeta sobre su caja de cartón, nunca sobre la bolsa.</p></div>
+      <div class="ficha"><div class="rd">MANUAL</div><h3>Consulta el manual</h3><p>Orden de pines, ranuras de RAM y conectores.</p></div>
+    </div>
+    <figure class="foto" data-a style="height:440px"><div class="ph"><img data-cm="ASUS_P5Q-EM_back_panel.jpg" alt="Panel trasero de conectores de una tarjeta madre ASUS"><div class="alt">Panel trasero de I/O</div></div><figcaption>Panel trasero (I/O): encaja en la placa de I/O de la caja.</figcaption></figure>
+  </div>
+</section>
+
+<section class="slide field-hi" data-title="Actividad: mapa de la tarjeta madre">
+  <p class="small" style="color:var(--ink);font-size:24px;font-weight:700">Actividad en el laboratorio · en parejas</p>
+  <p class="q sub">Con la pulsera ESD, identifica factor de forma, socket, chipset, tipo de RAM y cada conector. Dibuja un mapa rotulado y compáralo con el manual.</p>
+  <div class="discrow"><div class="timer" data-timer="1500"></div></div>
+</section>
+
+<section class="slide" data-title="Ejercicio corto">
+  <h2 class="mask"><span>Ejercicio corto: seis preguntas</span></h2>
+  <div class="quiz" id="qz" data-a>
+    <div class="qz-q"></div><div class="ops"></div><div class="why"></div>
+    <div class="foot"><div class="dots"></div><span class="qz-n"></span><button class="go qz-next">Siguiente</button></div>
+  </div>
+</section>
+
+<section class="slide" data-title="Créditos y referencias">
+  <h2 class="mask"><span>Créditos de las fotos y referencias</span></h2>
+  <p class="small sub">Fotos de Wikimedia Commons, guardadas con la presentación. Cada enlace lleva a la página del archivo.</p>
+  <ol class="cred-list" id="creds"></ol>
+  <p class="small" style="margin-top:12px">Referencias: Meyers, M. (2025). <i>CompTIA A+ certification all-in-one exam guide</i> (11th ed.). McGraw-Hill · Docter, Q., &amp; Buhagiar, J. (2022). <i>CompTIA A+ complete study guide</i> (5th ed.). Sybex · Mueller, S. (2022). <i>Upgrading and repairing PCs</i> (22nd ed.). Que · ITPR. (2026). Prontuario TESI 2108 (rev. mayo 2026).</p>
+</section>
+
+<section class="slide chapter" data-title="Cierre">
+  <div class="board">
+    <svg class="traces" viewBox="0 0 1280 664" aria-hidden="true"><path d="M0 560 H300 L360 500 H760 L820 440 H1280"/><circle cx="360" cy="500" r="11"/><circle cx="820" cy="440" r="11"/></svg>
+    <div class="inner"><div class="silk" data-a>POWER_OK</div><h2 class="ch-title mask"><span>Próxima: la fuente de alimentación</span></h2><p class="what" data-a>Próxima clase: lunes 14 de septiembre, Unidad C. El lunes 7 de septiembre no hay clases (Día del Trabajo).</p>
+    <div class="chip-row" data-a><span class="on">U1</span><span class="on">U2</span><span class="on">U3</span><span class="on">U4</span><span class="on">U5</span></div></div>
+  </div>
+</section>
+
+</div></div>
+<script src="assets/deck.js"></script>
+<script src="assets/kit.js"></script>
+<script>
+(function(){
+'use strict';
+var $=function(i){return document.getElementById(i)};
+var CRED={"Pci-slots.jpg": {"f": "Pci_slots", "a": "", "l": "Public domain"}, "ASUS_P5Q-EM_back_panel.jpg": {"f": "ASUS_P5Q_EM_back_panel", "a": "Hitachi-Train (talk)", "l": "Public domain"}, "CR2032_in_mainboard.jpg": {"f": "CR2032_in_mainboard", "a": "Lukas A, CZE", "l": "Public domain"}, "IBM_PC_Motherboard_(1981).jpg": {"f": "IBM_PC_Motherboard_1981", "a": "German", "l": "CC BY-SA 3.0"}, "Nichicon_2200uF_6.3V_swollen_leaking_capacitors_Compaq_year_2001_motherboard.jpg": {"f": "Nichicon_2200uF_6_3V_swollen_leaking_capacitors_Compaq_year_", "a": "Fromthehill", "l": "CC BY-SA 3.0"}, "Atx_computer_motherboard_with_cpu_and_fan.jpg": {"f": "Atx_computer_motherboard_with_cpu_and_fan", "a": "Leon Brooks", "l": "Public domain"}, "DDR4_DIMM_4GB_-2133_IMGP5813_smial_wp.jpg": {"f": "DDR4_DIMM_4GB_2133_IMGP5813_smial_wp", "a": "smial", "l": "FAL"}, "ATX12V_EPS12V_(8-pin).jpg": {"f": "ATX12V_EPS12V_8_pin", "a": "Chrispos3", "l": "CC BY-SA 4.0"}, "Socket_AM4.jpg": {"f": "Socket_AM4", "a": "Darklanlan", "l": "CC0"}, "ATX_Power_connectors.jpg": {"f": "ATX_Power_connectors", "a": "Dmitry Makeev", "l": "CC BY-SA 4.0"}, "AMD_Ryzen_7_3700X_pins_IMGP3168_smial_wp.jpg": {"f": "AMD_Ryzen_7_3700X_pins_IMGP3168_smial_wp", "a": "Smial (talk)", "l": "FAL"}, "Intel_LGA1200_Socket.jpg": {"f": "Intel_LGA1200_Socket", "a": "Gavin Bonshor", "l": "CC BY-SA 4.0"}, "GigabyteH170-HD3-PCH-and-Slots.jpg": {"f": "GigabyteH170_HD3_PCH_and_Slots", "a": "TheStriker", "l": "CC BY-SA 4.0"}};
+Kit.photos('B',CRED);
+Kit.credits($('creds'),CRED);
+
+/* ---------- mapa ---------- */
+var MP={
+ io:['PANEL I/O','Panel trasero','USB, red, audio y video integrado. Encaja en la placa de I/O de la caja.'],
+ cpu:['SOCKET','Socket de la CPU','Aloja el procesador. LGA (pines en el socket) o PGA (pines en la CPU).'],
+ eps:['CPU_8P','EPS de 8 pines','Energía de 12 V para la CPU. Si falta, los ventiladores giran pero no hay imagen.'],
+ ram:['DIMM','Ranuras de memoria','Junto al socket, porque el controlador de memoria está en la CPU. Los colores marcan el doble canal.'],
+ atx:['ATX_24P','Conector ATX de 24 pines','Energía principal de toda la tarjeta, desde la fuente.'],
+ pcie:['PCIEX16','Ranura PCIe x16','La más cercana a la CPU: para la tarjeta de video.'],
+ pci:['PCIEX1','Ranura PCIe x1','Para tarjetas de red, sonido, USB o Wi-Fi.'],
+ m2:['M2_1','Ranura M.2','Para SSD NVMe (PCIe) o M.2 SATA, según la tarjeta.'],
+ cmos:['BAT1','Pila CMOS CR2032','Mantiene la hora y la configuración cuando el equipo está desconectado.'],
+ chip:['PCH','Chipset','Administra USB, SATA, audio, red y carriles PCIe adicionales.'],
+ sata:['SATA6G','Puertos SATA','Para discos y unidades ópticas de 2.5″ y 3.5″.'],
+ fp:['F_PANEL','Panel frontal','Botón de encendido, reinicio y luces. Orden de pines según el manual.']
+};
+[].forEach.call($('mb').querySelectorAll('[data-p]'),function(b){b.setAttribute('aria-pressed','false');b.onclick=function(){
+  [].forEach.call($('mb').querySelectorAll('[data-p]'),function(x){x.setAttribute('aria-pressed',x===b)});
+  var m=MP[b.dataset.p];$('mb-rd').textContent=m[0];$('mb-h').textContent=m[1];$('mb-p').textContent=m[2]}});
+
+/* ---------- factores de forma ---------- */
+var FIT={atx:['atx','matx','itx'],matx:['matx','itx'],itx:['itx']};
+var CN={atx:'Una caja ATX',matx:'Una caja Micro ATX',itx:'Una caja Mini-ITX'};
+[].forEach.call(document.querySelectorAll('[data-case]'),function(b){b.onclick=function(){
+  [].forEach.call(document.querySelectorAll('[data-case]'),function(x){x.setAttribute('aria-pressed',x===b)});
+  var ok=FIT[b.dataset.case];
+  [].forEach.call(document.querySelectorAll('.ff'),function(f){var y=ok.indexOf(f.dataset.ff)>=0;f.style.background=y?'var(--pcb)':'#B9C3BC';f.style.transform=y?'none':'translateY(16px)'});
+  $('ff-h').textContent=CN[b.dataset.case]+' acepta:';
+  $('ff-p').textContent=ok.map(function(k){return {atx:'ATX',matx:'Micro ATX',itx:'Mini-ITX'}[k]}).join(', ')+'. Una caja tiene separadores para tarjetas de su tamaño o menores, nunca mayores.'}});
+
+/* ---------- PCIe ---------- */
+var pg=4,pc=16,ps=16,GB={3:0.985,4:1.969,5:3.938};
+function seg(id,attr,val,fn){[].forEach.call($(id).children,function(b){b.setAttribute('aria-pressed',+b.dataset[attr]===val);b.onclick=function(){fn(+b.dataset[attr]);pcDraw()}})}
+function pcDraw(){
+  seg('pg','g',pg,function(v){pg=v});seg('pc','c',pc,function(v){pc=v});seg('ps','s',ps,function(v){ps=v});
+  var W=500,per=W/16;
+  $('sv-sl').style.width=(ps*per)+'px';$('sv-card').style.width=(pc*per)+'px';
+  $('sv-l1').textContent='tarjeta x'+pc;$('sv-l2').textContent='ranura x'+ps;
+  var lanes=Math.min(pc,ps),bw=GB[pg]*lanes;
+  $('pv').textContent='≈ '+(bw<10?bw.toFixed(1):Math.round(bw))+' GB/s';
+  var note='PCIe '+pg+'.0 · trabaja en x'+lanes+' · por dirección.';
+  if(pc>ps)note='La tarjeta x'+pc+' en una ranura cableada x'+ps+' funciona, pero solo con '+ps+' carril'+(ps>1?'es':'')+'. Ojo: físicamente necesita una ranura del tamaño de la tarjeta.';
+  else if(pc<ps)note='Una tarjeta x'+pc+' funciona en una ranura x'+ps+': usa solo sus '+pc+' carril'+(pc>1?'es':'')+'.';
+  $('pl').textContent=note}
+pcDraw();
+
+/* ---------- chipset ---------- */
+function csMode(now){
+  $('cs-old').setAttribute('aria-pressed',!now);$('cs-new').setAttribute('aria-pressed',now);
+  $('cs-old').classList.toggle('go',!now);$('cs-new').classList.toggle('go',now);
+  if(now){$('b-cpu-t').textContent='Controla memoria y video';$('b-nb').style.opacity=.25;$('b-nb-h').textContent='Puente norte';$('b-nb-t').textContent='Ya no existe';
+    $('b-sb-h').textContent='Chipset (PCH)';$('b-sb-t').textContent='USB, SATA, audio, red, PCIe extra';
+    $('cs-l1').setAttribute('d','M190 70 H330');$('cs-l4').setAttribute('d','M190 100 L330 185');$('cs-l2').setAttribute('d','M95 120 C95 330 250 300 330 300');$('cs-l3').style.opacity=0;
+    $('cs-h').textContent='Un solo chip';$('cs-p').textContent='La CPU controla la memoria y la ranura x16. El chipset (PCH en Intel) se conecta a la CPU por DMI y maneja lo demás. Define cuántos puertos y funciones tiene la tarjeta.'}
+  else{$('b-cpu-t').textContent='Solo procesa';$('b-nb').style.opacity=1;$('b-nb-h').textContent='Puente norte';$('b-nb-t').textContent='Memoria y video';
+    $('b-sb-h').textContent='Puente sur';$('b-sb-t').textContent='USB, SATA, audio';
+    $('cs-l1').setAttribute('d','M190 280 L330 70');$('cs-l4').setAttribute('d','M190 290 L330 185');$('cs-l2').setAttribute('d','M95 120 V250');$('cs-l3').style.opacity=1;$('cs-l3').setAttribute('d','M190 320 H330');
+    $('cs-h').textContent='Dos puentes';$('cs-p').textContent='El puente norte controlaba la memoria y el video; el sur, los dispositivos lentos. La CPU llegaba a todo por el FSB.'}}
+$('cs-old').onclick=function(){csMode(false)};$('cs-new').onclick=function(){csMode(true)};csMode(false);
+
+/* ---------- panel frontal ---------- */
+Kit.sorter($('fp-chips'),$('fp-chips').closest('.slide'),[
+ ['POWER SW','np','Es un botón: no importa la polaridad.'],['RESET SW','np','Es un botón: no importa la polaridad.'],
+ ['POWER LED +/–','p','Es un LED: el + va con el +.'],['HDD LED +/–','p','Es un LED: el + va con el +.'],
+ ['USB 3.0 (19 pines)','h','Va en su cabezal azul con guía.'],['HD AUDIO','h','Va en el cabezal de audio de 10 pines.'],['USB 2.0 (9 pines)','h','Va en un cabezal USB de 9 pines.']
+],$('fp-msg'),'¡Completo! Si un LED no enciende, inviértelo: no se daña.');
+
+/* ---------- bus ---------- */
+var mt=3200,ch=1;
+function bDraw(){[].forEach.call($('bm').children,function(b){b.setAttribute('aria-pressed',+b.dataset.mt===mt);b.onclick=function(){mt=+b.dataset.mt;bDraw()}});
+  [].forEach.call($('bc').children,function(b){b.setAttribute('aria-pressed',+b.dataset.ch===ch);b.onclick=function(){ch=+b.dataset.ch;bDraw()}});
+  var v=mt*8*ch/1000;$('bv').textContent=v.toFixed(1)+' GB/s';$('bl').textContent=mt.toLocaleString('en-US')+' MT/s × 8 bytes × '+ch+' canal'+(ch>1?'es':'')}
+bDraw();
+
+/* ---------- BIOS ---------- */
+var boot=['Windows Boot Manager (SSD NVMe)','Memoria USB','Red (PXE)'],bt='main',secOn=false;
+var HELP={main:'Muestra el modelo de CPU, la memoria instalada, la fecha y la hora. Si se pierde la hora al desconectar el equipo, cambia la pila CR2032.',
+ boot:'Ordena desde qué unidad arranca el equipo. Para instalar Windows desde una memoria USB, súbela al primer lugar.',
+ sec:'Contraseña de administrador, Secure Boot y TPM. Windows 11 necesita TPM 2.0 y Secure Boot.',
+ exit:'Guarda los cambios (F10) o sal sin guardar. Load Defaults restaura la configuración de fábrica.'};
+function bios(){var p=$('bios-panel'),h='';
+  [].forEach.call($('bios').querySelectorAll('[data-bt]'),function(b){b.setAttribute('aria-pressed',b.dataset.bt===bt);b.onclick=function(){bt=b.dataset.bt;bios()}});
+  if(bt==='main')h='<div class="row sel"><span>CPU</span><span>Intel Core i5-12400</span></div><div class="row"><span>Memoria total</span><span>16384 MB (DDR4)</span></div><div class="row"><span>Velocidad de memoria</span><span>3200 MT/s</span></div><div class="row"><span>Fecha del sistema</span><span>08/31/2026</span></div><div class="row"><span>Hora del sistema</span><span>08:30:00</span></div>';
+  if(bt==='boot')h='<div class="row sel"><span>Orden de arranque</span><span></span></div><ol class="boot">'+boot.map(function(b,i){return '<li><span>'+(i+1)+'. '+b+'</span><span><button data-up="'+i+'" aria-label="Subir">▲</button><button data-dn="'+i+'" aria-label="Bajar">▼</button></span></li>'}).join('')+'</ol>';
+  if(bt==='sec')h='<div class="row sel"><span>Contraseña de administrador</span><span>No instalada</span></div><div class="row"><span>Secure Boot</span><span><button id="sb" style="font:600 16px var(--mono);padding:2px 10px">'+(secOn?'Enabled':'Disabled')+'</button></span></div><div class="row"><span>TPM 2.0</span><span>Enabled</span></div>';
+  if(bt==='exit')h='<div class="row sel"><span>Save Changes and Reset (F10)</span><span></span></div><div class="row"><span>Discard Changes and Exit</span><span></span></div><div class="row"><span>Load Optimized Defaults</span><span></span></div><div class="row"><span>Primer dispositivo de arranque</span><span>'+boot[0].split(' (')[0]+'</span></div><div class="row"><span>Secure Boot</span><span>'+(secOn?'Enabled':'Disabled')+'</span></div>';
+  p.innerHTML=h;$('bios-help').textContent=HELP[bt];
+  [].forEach.call(p.querySelectorAll('[data-up]'),function(b){b.onclick=function(){var i=+b.dataset.up;if(i>0){var t=boot[i];boot[i]=boot[i-1];boot[i-1]=t}bios()}});
+  [].forEach.call(p.querySelectorAll('[data-dn]'),function(b){b.onclick=function(){var i=+b.dataset.dn;if(i<boot.length-1){var t=boot[i];boot[i]=boot[i+1];boot[i+1]=t}bios()}});
+  var sb=$('sb');if(sb)sb.onclick=function(){secOn=!secOn;bios()}}
+bios();
+
+/* ---------- diagnóstico ---------- */
+var DX=[
+ ['No enciende nada','Fuente, cable del botón o conector de 24 pines.','Prueba el tomacorriente y la fuente; revisa POWER SW en F_PANEL.'],
+ ['Ventiladores giran, sin imagen','Falta el EPS de la CPU o la RAM está mal puesta.','Revisa el conector de 8 pines; reasienta la RAM; usa la configuración mínima.'],
+ ['Pitidos al encender','Error en la prueba POST (RAM o video).','Cuenta los pitidos y búscalos en el manual del fabricante.'],
+ ['Reinicios o apagados','Calor, capacitores dañados o fuente débil.','Revisa temperaturas, polvo y capacitores hinchados.','Nichicon_2200uF_6.3V_swollen_leaking_capacitors_Compaq_year_2001_motherboard.jpg'],
+ ['Pierde la hora y la configuración','Pila CMOS agotada.','Reemplaza la pila CR2032 y configura de nuevo el UEFI/BIOS.','CR2032_in_mainboard.jpg'],
+ ['USB o audio frontales no funcionan','Cabezal desconectado o falta el controlador del chipset.','Revisa los cabezales; instala los controladores del chipset.']
+];
+DX.forEach(function(d,i){var b=document.createElement('button');b.textContent=d[0];b.setAttribute('aria-pressed','false');b.onclick=function(){
+  [].forEach.call($('dx').children,function(x){x.setAttribute('aria-pressed',x===b)});
+  $('dx-k').textContent='CAUSA PROBABLE';$('dx-h').textContent=d[0];$('dx-c').textContent=d[1];$('dx-s').textContent='Qué hacer: '+d[2];
+  if(d[3]){$('dx-fig').style.display='';Kit.setPhoto($('dx-img'),'B',CRED,d[3]);$('dx-img').alt=d[0]}else $('dx-fig').style.display='none'};$('dx').appendChild(b)});
+
+/* ---------- simulador ---------- */
+var pts={atx:true,eps:false,cpu:true,ram:false,vid:false,fp:true};
+[].forEach.call($('parts').children,function(b){b.onclick=function(){pts[b.dataset.pt]=!pts[b.dataset.pt];b.setAttribute('aria-pressed',pts[b.dataset.pt])}});
+$('pw').onclick=function(){var led=null,s,m;
+  if(!pts.fp){s='—';m='No pasa nada: el botón del panel frontal no está conectado a F_PANEL.'}
+  else if(!pts.atx){s='—';m='No pasa nada: sin el conector de 24 pines la tarjeta no recibe energía.'}
+  else if(!pts.eps||!pts.cpu){s='Sin señal';led='cpu';m='Los ventiladores giran, pero el LED de CPU queda encendido: falta '+(!pts.cpu?'la CPU':'el conector EPS de la CPU')+'.'}
+  else if(!pts.ram){s='Sin señal';led='dram';m='LED DRAM encendido y pitidos: falta la memoria o está mal asentada.'}
+  else if(!pts.vid){s='Sin señal';led='vga';m='LED VGA: revisa que el monitor esté en el puerto correcto (tarjeta de video si la hay).'}
+  else{s='POST OK\nPresiona Supr para entrar al UEFI/BIOS';m='¡Imagen! Esta es la configuración mínima. Ahora agrega un componente a la vez.'}
+  $('scr').textContent=s;$('sim-msg').textContent=m;
+  [].forEach.call(document.querySelectorAll('[data-led]'),function(l){l.classList.toggle('lit',l.dataset.led===led)})};
+
+/* ---------- ejercicio ---------- */
+Kit.quiz($('qz'),[
+ ['¿Qué caja acepta una tarjeta Micro ATX?',['Solo una caja Micro ATX','Una caja ATX o una Micro ATX','Solo una caja Mini-ITX','Ninguna caja estándar'],1,'Una caja ATX tiene separadores para tamaños menores; una caja más pequeña no tiene espacio para una tarjeta mayor.'],
+ ['En un socket LGA, ¿dónde están los pines?',['En la CPU','En el socket de la tarjeta madre','En el disipador','En la pila CMOS'],1,'En LGA los pines están en el socket; en PGA están en la CPU.'],
+ ['Un equipo nuevo enciende los ventiladores, pero no da imagen y el LED de CPU queda encendido. ¿Qué revisas primero?',['La pila CMOS','El conector EPS de 8 pines de la CPU','El cable SATA','El audio frontal'],1,'Sin el EPS la CPU no recibe energía, aunque los ventiladores giren.'],
+ ['¿Qué cable del panel frontal tiene polaridad?',['POWER SW','RESET SW','POWER LED','Ninguno'],2,'Los LED tienen + y –; los botones no.'],
+ ['DDR4-3200 en doble canal, ¿qué ancho de banda tiene?',['25.6 GB/s','51.2 GB/s','3.2 GB/s','6.4 GB/s'],1,'3200 × 8 bytes × 2 canales = 51,200 MB/s = 51.2 GB/s.'],
+ ['El equipo pierde la fecha y la hora cada vez que se desconecta. ¿Qué falla?',['El chipset','La pila CMOS CR2032','La memoria RAM','La fuente de poder'],1,'La pila CMOS mantiene la hora y la configuración cuando no hay energía.']
+]);
+
+Deck.start();
+})();
+</script>
+</body>
+</html>
