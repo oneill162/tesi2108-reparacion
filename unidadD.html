@@ -1,0 +1,575 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Unidad D: Procesadores · TESI 2108</title>
+<meta name="description" content="TESI 2108 Reparación de Computadoras. Unidad D: procesadores, su historia, sockets, características, instalación y diagnóstico, vistos como un chip bajo el microscopio.">
+<link rel="preload" href="assets/fonts/schibsted-grotesk-latin-800-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="assets/deck.css">
+<style>
+/* Tema de la Unidad D: el chip bajo el microscopio. Silicio oscuro, plano del núcleo (die) con bloques dorados y oblea. */
+:root{--ground:#F0F1F5;--tone:#E1E3EC;--tone2:#CDD0DE;--ink:#12141C;--soft:#454A5C;--accent:#4B3FC4;--accent-ink:#fff;--field:#0B0D14;--field-ink:#EEF0F7;--hi:#E2B85A;--core:#C9A65A;--cache:#5E6A8C;--gpu:#3D7E8A;--die:#1B1F2B}
+#bar{background:#0B0D14}
+#map button.ch{background:transparent;box-shadow:inset 0 0 0 3px var(--core)}
+#map button.ch.seen{background:var(--core)}
+#map button.cur,#map button.ch.cur{background:#fff;box-shadow:none}
+button.go{background:var(--accent);color:#fff}
+button[aria-pressed=true]{background:var(--ink);color:#fff}
+
+/* capítulos: el die */
+.die{position:absolute;inset:0;padding:64px 80px;display:flex;flex-direction:column}
+.die .lab{font:600 21px var(--mono);color:var(--core)}
+.die .ch-title{font-size:88px;line-height:.98;letter-spacing:-.035em;font-weight:800;max-width:700px;margin-top:18px}
+.die .what{font-size:27px;line-height:1.38;max-width:640px;margin-top:22px;opacity:.86}
+.plan{position:absolute;right:80px;top:64px;width:400px;height:400px;background:var(--die);padding:14px;display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(4,1fr);gap:8px}
+.plan i{background:#2A3042;display:flex;align-items:center;justify-content:center;font:600 13px var(--mono);color:rgba(255,255,255,.55);font-style:normal;transition:background .4s}
+.plan i.c{background:#3A3524}
+.plan i.c.on{background:var(--core);color:#111}
+.plan i.l3{grid-column:span 4;background:var(--cache);color:#fff}
+.plan i.gpu{grid-column:span 2;background:var(--gpu);color:#fff}
+.plan i.io{grid-column:span 2;background:#4A4F60;color:#fff}
+@media (prefers-reduced-motion:no-preference){.entering .plan i.c.on{animation:lit .5s var(--ease-out) both;animation-delay:calc(300ms + var(--n,0) * 70ms)}}
+@keyframes lit{from{background:#3A3524;color:rgba(255,255,255,.55)}}
+.die .cores{margin-top:auto;display:flex;gap:8px}
+.die .cores span{width:118px;height:48px;background:#1F2433;color:rgba(255,255,255,.45);display:flex;align-items:center;justify-content:center;font:600 16px var(--mono)}
+.die .cores span.on{background:var(--core);color:#111}
+
+/* bloques */
+.ficha{background:#fff;padding:22px 26px}
+.ficha .k{font:600 17px var(--mono);color:var(--accent)}
+.ficha h3{margin-top:4px}
+.ficha p{font-size:21px;line-height:1.4;margin-top:8px;color:var(--soft)}
+.grid4{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+figure.foto{margin:0;background:#fff;padding:12px;display:flex;flex-direction:column}
+figure.foto .ph{flex:1;min-height:0;position:relative;background:var(--tone);overflow:hidden}
+figure.foto img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+figure.foto.contain img{object-fit:contain;background:#fff}
+figure.foto figcaption{font-size:15px;line-height:1.3;margin-top:8px;color:var(--soft)}
+figure.foto .ph .alt{position:absolute;inset:0;display:none;align-items:center;justify-content:center;text-align:center;padding:16px;font-size:20px;font-weight:600;color:var(--soft)}
+figure.foto.nofoto .ph .alt{display:flex}
+.msg{background:#fff;padding:14px 18px;font-size:21px;min-height:56px;margin-top:16px}
+.stat{background:var(--field);color:var(--field-ink);padding:18px 22px}
+.stat .v{font-size:50px;font-weight:800;letter-spacing:-.03em;line-height:1.05;color:var(--hi)}
+.stat .l{font-size:19px;margin-top:6px}
+.seg{display:flex;gap:8px;flex-wrap:wrap}
+.seg button{font-size:19px}
+
+/* línea de tiempo */
+.tl{display:flex;gap:8px;margin-top:20px}
+.tl button{flex:1;padding:14px 6px;font-size:21px;font-weight:800;background:#fff}
+.tl-view{display:grid;grid-template-columns:420px 1fr;gap:28px;margin-top:18px;height:360px}
+.tl-view .ficha{display:flex;flex-direction:column;justify-content:center}
+.tl-view .big{font-size:76px;font-weight:800;letter-spacing:-.03em;line-height:1}
+.tl-view h3{font-size:34px;margin-top:10px}
+.tl-view p{font-size:23px}
+
+/* decodificador de modelos */
+.dec{margin-top:20px}
+.dec .name{display:flex;gap:6px;flex-wrap:wrap;font:700 64px/1.1 var(--mono);margin-top:18px}
+.dec .name span{padding:6px 14px;background:#fff;cursor:pointer;border-bottom:8px solid transparent}
+.dec .name span[aria-pressed=true]{border-bottom-color:var(--accent)}
+.dec .ex{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:22px}
+
+/* compatibilidad */
+.comp{display:grid;grid-template-columns:1fr 1fr 360px;gap:20px;margin-top:20px}
+.comp .col h3{margin-bottom:10px}
+.comp .col button{display:block;width:100%;text-align:left;font-size:19px;padding:12px 14px;background:#fff;margin-bottom:8px}
+
+/* reloj */
+.clock{display:grid;grid-template-columns:1fr 1fr;gap:32px;margin-top:22px}
+.clock label{display:flex;justify-content:space-between;font-size:22px;font-weight:600}
+input[type=range]{width:100%;height:36px;accent-color:var(--accent)}
+.pulse{display:flex;gap:4px;height:70px;align-items:flex-end;margin-top:16px;background:#fff;padding:10px}
+.pulse i{flex:1;background:var(--accent);height:100%}
+
+/* núcleos */
+.thr{display:grid;grid-template-columns:420px 1fr;gap:28px;margin-top:18px}
+.coregrid{display:grid;grid-template-columns:repeat(8,1fr);gap:6px;background:var(--die);padding:12px;min-height:150px;align-content:start}
+.coregrid i{height:44px;background:var(--core);position:relative;font-style:normal}
+.coregrid i.e{background:#7FA7B5}
+.coregrid i.ht::after{content:"";position:absolute;left:50%;top:6px;bottom:6px;width:3px;margin-left:-1.5px;background:#111}
+.race{background:#fff;padding:16px 18px}
+.race .ln{display:grid;grid-template-columns:170px 1fr 90px;gap:12px;align-items:center;margin:8px 0;font-size:19px}
+.race .tr{height:26px;background:var(--tone)}
+.race .tr b{display:block;height:100%;background:var(--accent);width:0;transition:width 1.2s var(--ease-out)}
+
+/* caché */
+.mem{display:grid;grid-template-columns:1fr 360px;gap:28px;margin-top:20px}
+.lv{display:grid;grid-template-columns:150px 1fr 120px;gap:12px;align-items:center;margin-bottom:12px}
+.lv .nm{font-size:22px;font-weight:800}
+.lv .tr{height:44px;background:#fff;position:relative}
+.lv .tr b{position:absolute;left:0;top:0;bottom:0;width:0;transition:width .9s var(--ease-out)}
+.lv .t{font:600 20px var(--mono);text-align:right}
+
+/* bits */
+.bits{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:20px}
+.bits button{text-align:left;padding:22px 24px;background:#fff;font-size:22px}
+.bits button b{display:block;font-size:44px;font-weight:800;letter-spacing:-.02em}
+
+/* virtualización: Administrador de tareas */
+.tm{background:#fff;font-family:"Segoe UI",var(--sans);margin-top:18px;border:1px solid var(--tone2)}
+.tm .hd{background:#F3F3F3;padding:10px 16px;font-size:17px;color:#333}
+.tm .bd{display:grid;grid-template-columns:1fr 1fr;gap:6px 30px;padding:18px 22px;font-size:19px}
+.tm .bd span{color:#666}
+.tm .bd b{font-weight:600}
+
+/* temperatura */
+.temp{display:grid;grid-template-columns:1fr 360px;gap:28px;margin-top:18px}
+.gauge{height:60px;background:linear-gradient(90deg,transparent,transparent);position:relative;margin-top:16px;display:flex}
+.gauge span{flex:1}
+.gauge .nd{position:absolute;top:-10px;bottom:-10px;width:8px;background:#111;transition:left .8s var(--ease-expo)}
+
+/* chips */
+.chips{display:flex;flex-wrap:wrap;gap:12px}
+.chip{font:600 21px var(--sans);padding:12px 18px;background:#fff;color:var(--ink)}
+.chip.sel{background:var(--ink);color:#fff}
+.chip.ok{background:#1E9E4F;color:#fff}
+.chip.bad{background:#C0392B;color:#fff}
+.bins{display:grid;gap:14px;margin-top:20px}
+.bin{background:var(--tone);padding:16px 18px;min-height:150px}
+.bin h3{font-size:24px}
+.bin .in{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.bin .in span{font-size:18px;font-weight:600;background:#fff;padding:6px 10px}
+
+/* diagnóstico y quiz */
+.dx{display:grid;grid-template-columns:420px 1fr;gap:24px;margin-top:18px}
+.dx .list{display:flex;flex-direction:column;gap:10px}
+.dx .list button{text-align:left;font-size:20px;padding:14px 16px;background:#fff}
+.dx .ans{background:#fff;padding:24px 28px;min-height:330px}
+.dx .ans .k{font:600 17px var(--mono);color:var(--accent)}
+.dx .ans p{font-size:23px;margin-top:6px}
+.quiz{margin-top:16px}
+.quiz .qz-q{font-size:30px;font-weight:700;line-height:1.2;min-height:76px}
+.quiz .ops{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+.quiz .ops button{text-align:left;font-size:22px;padding:16px 18px;background:#fff;color:var(--ink)}
+.quiz .ops button.ok{background:#1E9E4F;color:#fff}
+.quiz .ops button.bad{background:#C0392B;color:#fff}
+.quiz .why{font-size:21px;margin-top:14px;min-height:62px;background:var(--tone);padding:12px 16px}
+.quiz .foot{display:flex;justify-content:space-between;align-items:center;margin-top:14px;font-size:21px;font-weight:600}
+.dots{display:flex;gap:6px}.dots i{width:22px;height:10px;background:var(--tone2)}.dots i.ok{background:#1E9E4F}.dots i.bad{background:#C0392B}.dots i.cur{background:var(--ink)}
+
+.tl button[aria-pressed=true],.comp .col button[aria-pressed=true],.bits button[aria-pressed=true],.dx .list button[aria-pressed=true]{background:var(--ink);color:#fff}
+.discrow{position:absolute;left:72px;right:72px;bottom:40px}
+.field-hi .q{font-size:54px;line-height:1.05;letter-spacing:-.03em;font-weight:800;max-width:1100px}
+.slide.field-hi{background:var(--hi)}
+.cred-list{columns:2;column-gap:40px;font-size:15px;line-height:1.45;margin-top:14px;padding-left:22px}
+.cred-list a{color:var(--ink)}
+</style>
+</head>
+<body>
+<div id="viewport"><div id="stage" data-name="TESI 2108 · Unidad D">
+
+<!-- 1 portada -->
+<section class="slide chapter" data-title="Portada">
+  <div class="die">
+    <div class="lab" data-a>DIE · TESI 2108 · 2026</div>
+    <h1 class="mask" style="margin-top:20px;font-size:100px;max-width:700px"><span>Unidad D: Procesadores</span></h1>
+    <p class="what" data-a>Semana 5 · lunes 21 de septiembre de 2026<br>Prof. Eduardo O. De Jesús Arroyo · Instituto Tecnológico de Puerto Rico</p>
+    <div class="cores" data-a><span>CORE 0</span><span>CORE 1</span><span>CORE 2</span><span>CORE 3</span></div>
+  </div>
+  <div class="plan" data-a><i class="c on" style="--n:0">P0</i><i class="c on" style="--n:1">P1</i><i class="c on" style="--n:2">P2</i><i class="c on" style="--n:3">P3</i><i class="c on" style="--n:4">P4</i><i class="c on" style="--n:5">P5</i><i class="c on" style="--n:6">P6</i><i class="c on" style="--n:7">P7</i><i class="l3">L3 COMPARTIDA</i><i class="gpu">iGPU</i><i class="io">IMC · PCIe</i></div>
+</section>
+
+<section class="slide" data-title="Al terminar la clase">
+  <h2 class="mask"><span>Al terminar la clase podrás…</span></h2>
+  <div class="grid4 gap">
+    <div class="ficha" data-a><div class="k">4004 → M1</div><h3>Describir la evolución</h3><p>De los procesadores x86 y ARM.</p></div>
+    <div class="ficha" data-a><div class="k">NÚCLEOS · HILOS · GHz · CACHÉ</div><h3>Comparar procesadores</h3><p>Por sus características y arquitectura.</p></div>
+    <div class="ficha" data-a><div class="k">LGA · PGA · BGA</div><h3>Instalar una CPU</h3><p>Y su disipador en el socket correcto.</p></div>
+    <div class="ficha" data-a><div class="k">°C · THROTTLING</div><h3>Diagnosticar fallas</h3><p>En especial las causadas por calor.</p></div>
+  </div>
+</section>
+
+<!-- CAP 1 -->
+<section class="slide chapter" data-title="01 · Historia y procesadores actuales">
+  <div class="die">
+    <div class="lab" data-a>CORE 0</div>
+    <h2 class="ch-title mask"><span>Historia y procesadores actuales</span></h2>
+    <p class="what" data-a>De 2,300 transistores a miles de millones: fabricantes, familias y cómo leer un modelo.</p>
+    <div class="cores" data-a><span class="on">CORE 0</span><span>CORE 1</span><span>CORE 2</span><span>CORE 3</span></div>
+  </div>
+  <figure class="plan foto" data-a style="display:flex;padding:12px"><div class="ph"><img data-cm="Intel_8086_CPU_Die.JPG" alt="Núcleo de silicio del Intel 8086 visto al microscopio"><div class="alt">Die del Intel 8086</div></div></figure>
+</section>
+
+<section class="slide" data-title="Evolución del procesador">
+  <h2 class="mask"><span>Evolución del procesador</span></h2>
+  <div class="tl" id="tl" data-a></div>
+  <div class="tl-view" data-a>
+    <figure class="foto contain"><div class="ph"><img id="tl-img" alt=""><div class="alt" id="tl-alt"></div></div><figcaption id="tl-cap"></figcaption></figure>
+    <div class="ficha"><div class="big" id="tl-yr"></div><h3 id="tl-h"></h3><p id="tl-p"></p></div>
+  </div>
+</section>
+
+<section class="slide" data-title="Fabricantes y familias">
+  <h2 class="mask"><span>Fabricantes y familias</span></h2>
+  <table class="t gap" data-a style="margin-top:22px"><tr><th>Fabricante</th><th>Escritorio y laptop</th><th>Servidores</th><th>Arquitectura</th></tr>
+    <tr><td><b>Intel</b></td><td>Core i3/i5/i7/i9 · Core Ultra 5/7/9 · Celeron y Pentium</td><td>Xeon</td><td>x86-64</td></tr>
+    <tr><td><b>AMD</b></td><td>Ryzen 3/5/7/9 · Athlon</td><td>EPYC</td><td>x86-64</td></tr>
+    <tr><td><b>Apple</b></td><td>M1, M2, M3, M4 y sucesores</td><td>—</td><td>ARM</td></tr>
+    <tr><td><b>Qualcomm</b></td><td>Snapdragon X (laptops con Windows)</td><td>—</td><td>ARM</td></tr></table>
+  <p class="body sub" data-a>x86-64 domina las PC con Windows y Linux; ARM, de bajo consumo, domina teléfonos y llegó a las computadoras.</p>
+</section>
+
+<section class="slide" data-title="Lee el modelo">
+  <h2 class="mask"><span>Aprende a leer un modelo</span></h2>
+  <div class="dec" data-a>
+    <div class="seg" id="dec-pick"></div>
+    <div class="name" id="dec-name"></div>
+    <div class="msg" id="dec-msg" style="font-size:23px;min-height:90px">Toca cada parte del nombre.</div>
+  </div>
+</section>
+
+<section class="slide" data-title="¿Trae gráficos integrados?">
+  <h2 class="mask"><span>¿Trae gráficos integrados?</span></h2>
+  <p class="body sub" data-a>Toca un procesador y luego dónde va. Error común: una CPU sin gráficos y sin tarjeta de video no da imagen.</p>
+  <div class="chips" id="gx-chips" data-a style="margin-top:16px"></div>
+  <div class="bins" data-a style="grid-template-columns:1fr 1fr">
+    <div class="bin" data-bin="y"><h3>Trae gráficos integrados</h3><p class="small">Puede usar los puertos de video de la tarjeta madre</p><div class="in"></div></div>
+    <div class="bin" data-bin="n"><h3>Necesita tarjeta de video</h3><p class="small">Sin GPU integrada</p><div class="in"></div></div>
+  </div>
+  <div class="msg" id="gx-msg">En Intel, la F indica que no tiene gráficos. En AMD, la G indica gráficos más potentes.</div>
+</section>
+
+<!-- CAP 2 -->
+<section class="slide chapter" data-title="02 · Sockets e instalación">
+  <div class="die">
+    <div class="lab" data-a>CORE 1</div>
+    <h2 class="ch-title mask"><span>Sockets e instalación</span></h2>
+    <p class="what" data-a>Compatibilidad, instalación de la CPU, pasta térmica y enfriamiento.</p>
+    <div class="cores" data-a><span>CORE 0</span><span class="on">CORE 1</span><span>CORE 2</span><span>CORE 3</span></div>
+  </div>
+  <figure class="plan foto" data-a style="display:flex;padding:12px"><div class="ph"><img data-cm="Intel_LGA1200_Socket.jpg" alt="Socket Intel LGA 1200"><div class="alt">Socket LGA</div></div></figure>
+</section>
+
+<section class="slide" data-title="¿Es compatible?">
+  <h2 class="mask"><span>¿Esta CPU va en esta tarjeta madre?</span></h2>
+  <div class="comp">
+    <div class="col" data-a><h3>Procesador</h3><div id="cp-cpu"></div></div>
+    <div class="col" data-a><h3>Tarjeta madre</h3><div id="cp-mb"></div></div>
+    <div data-a><div class="stat" id="cp-st"><div class="v" id="cp-v">—</div><div class="l" id="cp-l">Escoge un procesador y una tarjeta madre.</div></div>
+      <p class="small" style="margin-top:12px">En laptops la CPU casi siempre es BGA: viene soldada y no se reemplaza.</p></div>
+  </div>
+</section>
+
+<section class="slide" data-title="LGA, PGA y la instalación">
+  <h2 class="mask"><span>Instalación paso a paso</span></h2>
+  <div class="cols" style="grid-template-columns:400px 1fr;gap:24px;margin-top:20px">
+    <figure class="foto" data-a style="height:450px"><div class="ph"><img id="ins-img" alt=""><div class="alt" id="ins-alt"></div></div><figcaption id="ins-cap"></figcaption></figure>
+    <div data-a>
+      <div class="seg" id="ins-tabs"></div>
+      <div class="ficha" style="margin-top:14px;min-height:300px"><div class="k" id="ins-k"></div><h3 id="ins-h" style="font-size:34px"></h3><p id="ins-p" style="font-size:23px"></p></div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-title="Enfriamiento">
+  <h2 class="mask"><span>Enfriamiento: el calor tiene que salir</span></h2>
+  <div class="grid3" style="margin-top:22px">
+    <figure class="foto" data-a style="height:250px"><div class="ph"><img data-cm="Heatsink_with_heat_pipes.jpg" alt="Disipador con tubos de calor y ventilador"><div class="alt">Disipador</div></div><figcaption><b>Disipador con ventilador:</b> aluminio o cobre con tubos de calor.</figcaption></figure>
+    <figure class="foto" data-a style="height:250px"><div class="ph"><img data-cm="H115i_liquid_cooler.jpg" alt="Enfriamiento líquido todo en uno con radiador"><div class="alt">Enfriamiento líquido</div></div><figcaption><b>Líquido (AIO):</b> bomba, mangueras y radiador. Su falla común es la bomba.</figcaption></figure>
+    <figure class="foto" data-a style="height:250px"><div class="ph"><img data-cm="NEC_Versa_2760MT_thermal_paste.jpg" alt="Pasta térmica sobre el procesador de una laptop"><div class="alt">Pasta térmica</div></div><figcaption><b>Pasta térmica:</b> llena los huecos entre la CPU y el disipador.</figcaption></figure>
+  </div>
+  <div class="msg" data-a>Después de instalar, entra al UEFI/BIOS y verifica el modelo de la CPU, su temperatura y las RPM del ventilador (CPU_FAN).</div>
+</section>
+
+<!-- CAP 3 -->
+<section class="slide chapter" data-title="03 · Características">
+  <div class="die">
+    <div class="lab" data-a>CORE 2</div>
+    <h2 class="ch-title mask"><span>Características del procesador</span></h2>
+    <p class="what" data-a>Velocidad, núcleos e hilos, caché, virtualización, 32 y 64 bits, y gráficos integrados.</p>
+    <div class="cores" data-a><span>CORE 0</span><span>CORE 1</span><span class="on">CORE 2</span><span>CORE 3</span></div>
+  </div>
+  <figure class="plan foto" data-a style="display:flex;padding:12px"><div class="ph"><img data-cm="Silicon_die.jpg" alt="Un chip de silicio que refleja colores"><div class="alt">Chip de silicio</div></div></figure>
+</section>
+
+<section class="slide" data-title="Velocidad del reloj">
+  <h2 class="mask"><span>Velocidad = reloj base × multiplicador</span></h2>
+  <div class="clock">
+    <div data-a>
+      <label for="mul">Multiplicador <b id="mul-v">45</b></label><input type="range" id="mul" min="8" max="60" value="45">
+      <label style="margin-top:14px">Reloj base (BCLK) <b>100 MHz</b></label>
+      <div class="seg" style="margin-top:16px"><button id="turbo" aria-pressed="false">Turbo</button><button id="hot" aria-pressed="false">Simular calor</button></div>
+      <p class="small" style="margin-top:12px">Con calor, la CPU baja la velocidad para protegerse (throttling).</p>
+    </div>
+    <div data-a>
+      <div class="stat"><div class="v" id="ghz">4.5 GHz</div><div class="l" id="ghz-l">4,500 millones de ciclos por segundo</div></div>
+      <div class="pulse" id="pulse"></div>
+      <p class="small" style="margin-top:10px">Más GHz no siempre es más rápido: importan también las instrucciones por ciclo (IPC) y los núcleos.</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-title="Núcleos e hilos">
+  <h2 class="mask"><span>Núcleos e hilos: reparte el trabajo</span></h2>
+  <div class="thr">
+    <div data-a>
+      <div class="seg" id="th-pick"></div>
+      <div class="coregrid" id="cg" style="margin-top:14px"></div>
+      <p class="small" style="margin-top:10px">Dorado: núcleos de rendimiento (P) · azul: de eficiencia (E) · línea: dos hilos (Hyperthreading/SMT).</p>
+    </div>
+    <div data-a>
+      <div class="race" id="race"></div>
+      <div class="row" style="margin-top:12px"><button class="go" id="run">Exportar un video (48 tareas)</button></div>
+      <div class="msg" id="run-msg">Escoge un procesador y exporta. Un núcleo con dos hilos rinde más, pero no el doble.</div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-title="Memoria caché">
+  <h2 class="mask"><span>¿Dónde busca la CPU el dato?</span></h2>
+  <div class="mem">
+    <div data-a id="lvs"></div>
+    <div data-a>
+      <div class="seg" id="hit"><button data-h="0">Está en L1</button><button data-h="1">En L2</button><button data-h="2">En L3</button><button data-h="3">Solo en la RAM</button></div>
+      <div class="msg" id="hit-msg" style="min-height:150px">La caché guarda lo más usado dentro de la CPU para no esperar a la RAM. L1 y L2 son por núcleo; L3 es compartida.</div>
+      <p class="small">Tiempos aproximados, solo para comparar.</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-title="32 y 64 bits">
+  <h2 class="mask"><span>32 o 64 bits: ¿cuánta memoria cabe?</span></h2>
+  <div class="bits" id="bits" data-a>
+    <button data-b="16"><b>16 bits</b>2¹⁶ direcciones</button>
+    <button data-b="32"><b>32 bits</b>2³² direcciones</button>
+    <button data-b="64"><b>64 bits</b>2⁶⁴ direcciones</button>
+  </div>
+  <div class="stat" data-a style="margin-top:18px"><div class="v" id="bits-v">—</div><div class="l" id="bits-l">Toca una arquitectura.</div></div>
+  <p class="body sub" data-a>Un sistema operativo de 64 bits ejecuta programas de 32; al revés no. Windows 11 solo existe en 64 bits.</p>
+</section>
+
+<section class="slide" data-title="Virtualización">
+  <h2 class="mask"><span>Virtualización: actívala en el UEFI/BIOS</span></h2>
+  <div class="cols" style="grid-template-columns:1fr 1fr;gap:28px">
+    <div data-a>
+      <p class="body" style="margin-top:18px">Para usar máquinas virtuales (Hyper-V, VirtualBox, VMware), la CPU debe tener <b>Intel VT-x</b> o <b>AMD-V</b> y la opción debe estar activada.</p>
+      <div class="seg" style="margin-top:18px"><button id="vt" aria-pressed="false">UEFI/BIOS: Intel VT-x</button><button class="go" id="vm">Abrir una máquina virtual</button></div>
+      <div class="msg" id="vm-msg">Primero revisa el Administrador de tareas.</div>
+    </div>
+    <div class="tm" data-a>
+      <div class="hd">Administrador de tareas · Rendimiento · CPU</div>
+      <div class="bd"><span>Velocidad base</span><b>2.50 GHz</b><span>Sockets</span><b>1</b><span>Núcleos</span><b>6</b><span>Procesadores lógicos</span><b>12</b><span>Virtualización</span><b id="tm-vt">Deshabilitado</b><span>Caché L3</span><b>18.0 MB</b></div>
+    </div>
+  </div>
+</section>
+
+<!-- CAP 4 -->
+<section class="slide chapter" data-title="04 · Fallas y diagnóstico">
+  <div class="die">
+    <div class="lab" data-a>CORE 3</div>
+    <h2 class="ch-title mask"><span>Fallas y diagnóstico</span></h2>
+    <p class="what" data-a>Calor, compatibilidad y pines dañados: la CPU rara vez falla sola.</p>
+    <div class="cores" data-a><span>CORE 0</span><span>CORE 1</span><span>CORE 2</span><span class="on">CORE 3</span></div>
+  </div>
+  <figure class="plan foto" data-a style="display:flex;padding:12px"><div class="ph"><img data-cm="Intel_Xeon_3060_Heat_Spreader_(49818344778).jpg" alt="Tapa de un procesador con restos de pasta térmica seca"><div class="alt">Pasta térmica seca</div></div></figure>
+</section>
+
+<section class="slide" data-title="Simulador de temperatura">
+  <h2 class="mask"><span>Simulador: ¿por qué se calienta?</span></h2>
+  <div class="temp">
+    <div data-a>
+      <h3>Estado del enfriamiento</h3>
+      <div class="seg" id="cool" style="margin-top:8px"><button data-k="ok">Todo bien</button><button data-k="dust">Polvo</button><button data-k="paste">Pasta seca</button><button data-k="fan">Ventilador detenido</button></div>
+      <h3 style="margin-top:16px">Uso de la CPU</h3>
+      <div class="seg" id="load" style="margin-top:8px"><button data-l="idle">Reposo</button><button data-l="full">Carga completa</button></div>
+      <div class="gauge" id="gauge"><span style="background:#7FB7E6"></span><span style="background:#7FCF9A"></span><span style="background:#7FCF9A"></span><span style="background:#F2C35A"></span><span style="background:#F08A4B"></span><span style="background:#D7262B"></span><div class="nd" id="nd"></div></div>
+      <div class="row" style="justify-content:space-between;font:600 15px var(--mono);color:var(--soft);margin-top:6px"><span>20 °C</span><span>50 °C</span><span>85 °C</span><span>100 °C</span></div>
+    </div>
+    <div data-a>
+      <div class="stat"><div class="v" id="tv">38 °C</div><div class="l" id="tl2">Reposo con enfriamiento en buen estado.</div></div>
+      <div class="msg" id="tmsg" style="min-height:120px"></div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-title="Diagnostica la falla">
+  <h2 class="mask"><span>Fallas comunes del procesador</span></h2>
+  <div class="dx">
+    <div class="list" id="dx" data-a></div>
+    <div class="ans" data-a><div class="k" id="dx-k">SÍNTOMA</div><h3 id="dx-h" style="font-size:30px">Escoge un síntoma</h3><p id="dx-c"></p><p id="dx-s" style="color:var(--soft)"></p></div>
+  </div>
+</section>
+
+<section class="slide field-hi" data-title="Actividad: conoce tu procesador">
+  <p class="small" style="color:var(--ink);font-size:24px;font-weight:700">Actividad en el laboratorio · individual</p>
+  <p class="q sub">Abre el Administrador de tareas (Rendimiento → CPU) o CPU-Z. Anota modelo, velocidad, núcleos, hilos, caché y si la virtualización está habilitada. Busca el socket en la ficha oficial.</p>
+  <div class="discrow"><div class="timer" data-timer="1200"></div></div>
+</section>
+
+<section class="slide" data-title="Ejercicio corto">
+  <h2 class="mask"><span>Ejercicio corto: seis preguntas</span></h2>
+  <div class="quiz" id="qz" data-a>
+    <div class="qz-q"></div><div class="ops"></div><div class="why"></div>
+    <div class="foot"><div class="dots"></div><span class="qz-n"></span><button class="go qz-next">Siguiente</button></div>
+  </div>
+</section>
+
+<section class="slide" data-title="Créditos y referencias">
+  <h2 class="mask"><span>Créditos de las fotos y referencias</span></h2>
+  <p class="small sub">Fotos de Wikimedia Commons, guardadas con la presentación. Cada enlace lleva a la página del archivo.</p>
+  <ol class="cred-list" id="creds"></ol>
+  <p class="small" style="margin-top:12px">Referencias: Meyers, M. (2025). <i>CompTIA A+ certification all-in-one exam guide</i> (11th ed.). McGraw-Hill · Hennessy, J. L., &amp; Patterson, D. A. (2021). <i>Computer architecture</i> (6th ed.). Morgan Kaufmann · Intel. (s.f.). Intel product specifications (ARK). · AMD. (s.f.). Processor specifications. · ITPR. (2026). Prontuario TESI 2108 (rev. mayo 2026).</p>
+</section>
+
+<section class="slide chapter" data-title="Cierre">
+  <div class="die">
+    <div class="lab" data-a>POST OK</div>
+    <h2 class="ch-title mask"><span>Próxima: la memoria RAM</span></h2>
+    <p class="what" data-a>Próxima clase: lunes 28 de septiembre, Unidad E. Trae la ficha de tu procesador para comentarla.</p>
+    <div class="cores" data-a><span class="on">CORE 0</span><span class="on">CORE 1</span><span class="on">CORE 2</span><span class="on">CORE 3</span></div>
+  </div>
+  <div class="plan" data-a><i class="c on" style="--n:0">P0</i><i class="c on" style="--n:1">P1</i><i class="c on" style="--n:2">P2</i><i class="c on" style="--n:3">P3</i><i class="c on" style="--n:4">P4</i><i class="c on" style="--n:5">P5</i><i class="c on" style="--n:6">P6</i><i class="c on" style="--n:7">P7</i><i class="l3">L3 COMPARTIDA</i><i class="gpu">iGPU</i><i class="io">IMC · PCIe</i></div>
+</section>
+
+</div></div>
+<script src="assets/deck.js"></script>
+<script src="assets/kit.js"></script>
+<script>
+(function(){
+'use strict';
+var $=function(i){return document.getElementById(i)};
+var CRED={"Intel_Pentium.jpg": {"f": "Intel_Pentium", "a": "Автор оригинальной работы Krzysztof Burghardt. Я, Lucas Novokuznetsk, обелил фон.", "l": "CC BY-SA 3.0"}, "Heatsink_with_heat_pipes.jpg": {"f": "Heatsink_with_heat_pipes", "a": "Hustvedt", "l": "CC BY-SA 3.0"}, "Intel_8086_CPU_Die.JPG": {"f": "Intel_8086_CPU_Die", "a": "Pdesousa359", "l": "CC BY-SA 3.0"}, "Intel_C8086.jpg": {"f": "Intel_C8086", "a": "Thomas Nguyen", "l": "CC BY-SA 4.0"}, "Intel_C4004.jpg": {"f": "Intel_C4004", "a": "Thomas Nguyen", "l": "CC BY-SA 4.0"}, "Socket_AM4.jpg": {"f": "Socket_AM4", "a": "Darklanlan", "l": "CC0"}, "Silicon_die.jpg": {"f": "Silicon_die", "a": "Le hollandais volant", "l": "CC BY 4.0"}, "H115i_liquid_cooler.jpg": {"f": "H115i_liquid_cooler", "a": "BrandonXLF", "l": "CC BY-SA 4.0"}, "AMD_Ryzen_7_3700X_top_IMGP3165_smial_wp.jpg": {"f": "AMD_Ryzen_7_3700X_top_IMGP3165_smial_wp", "a": "Smial (talk)", "l": "FAL"}, "AMD_Ryzen_7_3700X_pins_IMGP3168_smial_wp.jpg": {"f": "AMD_Ryzen_7_3700X_pins_IMGP3168_smial_wp", "a": "Smial (talk)", "l": "FAL"}, "Intel_LGA1200_Socket.jpg": {"f": "Intel_LGA1200_Socket", "a": "Gavin Bonshor", "l": "CC BY-SA 4.0"}, "Apple_M1.jpg": {"f": "Apple_M1", "a": "Henriok", "l": "CC0"}, "NEC_Versa_2760MT_thermal_paste.jpg": {"f": "NEC_Versa_2760MT_thermal_paste", "a": "WizardTim", "l": "CC BY 4.0"}, "Intel_CPU_Core_i7_12700K_Alder_Lake_top.jpg": {"f": "Intel_CPU_Core_i7_12700K_Alder_Lake_top", "a": "Eric Gaba (Sting - fr:Sting)", "l": "CC BY-SA 4.0"}, "Intel_Xeon_3060_Heat_Spreader_(49818344778).jpg": {"f": "Intel_Xeon_3060_Heat_Spreader_49818344778", "a": "Cole L", "l": "Public domain"}};
+function press(cont,attr,val){[].forEach.call(cont.querySelectorAll('['+attr+']'),function(b){b.setAttribute('aria-pressed',String(b.getAttribute(attr))===String(val))})}
+Kit.photos('D',CRED);
+
+/* ---------- línea de tiempo ---------- */
+var TL=[['1971','Intel 4004','4 bits y 2,300 transistores: el primer microprocesador comercial.','Intel_C4004.jpg','Microprocesador Intel C4004'],
+ ['1978','Intel 8086','Nace la arquitectura x86, que las PC siguen usando por compatibilidad.','Intel_C8086.jpg','Microprocesador Intel C8086'],
+ ['1993','Pentium','Superescalar: ejecuta más de una instrucción por ciclo.','Intel_Pentium.jpg','Procesador Intel Pentium'],
+ ['2003','x86-64','AMD crea la extensión de 64 bits (Athlon 64) que hoy usan Intel y AMD.','',''],
+ ['2006','Doble núcleo','Core 2 Duo: dos procesadores en un chip; empieza la era multinúcleo.','',''],
+ ['2017','AMD Ryzen','Muchos núcleos a buen precio; vuelve la competencia fuerte.','AMD_Ryzen_7_3700X_top_IMGP3165_smial_wp.jpg','Procesador AMD Ryzen 7 3700X'],
+ ['2020','Apple M1','ARM llega a las computadoras: bajo consumo y alto rendimiento.','Apple_M1.jpg','Chip Apple M1'],
+ ['Hoy','Núcleos P y E','Intel combina núcleos de rendimiento y de eficiencia (desde la 12.ª generación).','Intel_CPU_Core_i7_12700K_Alder_Lake_top.jpg','Procesador Intel Core i7-12700K']];
+var tl=$('tl');TL.forEach(function(t,i){var b=document.createElement('button');b.textContent=t[0];b.onclick=function(){tlShow(i)};tl.appendChild(b)});
+function tlShow(i){var t=TL[i];[].forEach.call(tl.children,function(b,j){b.setAttribute('aria-pressed',j===i)});
+  $('tl-yr').textContent=t[0];$('tl-h').textContent=t[1];$('tl-p').textContent=t[2];$('tl-alt').textContent=t[1];$('tl-img').alt=t[4];
+  Kit.setPhoto($('tl-img'),'D',CRED,t[3]);$('tl-cap').textContent=t[3]&&CRED[t[3]]?'Foto: '+(CRED[t[3]].a||'Wikimedia Commons')+' · '+CRED[t[3]].l:''}
+tlShow(0);
+Kit.credits($('creds'),CRED,TL.filter(function(t){return t[3]}).map(function(t){return [t[3],t[4]]}).concat([['Socket_AM4.jpg','Socket AMD AM4'],['AMD_Ryzen_7_3700X_pins_IMGP3168_smial_wp.jpg','Pines del Ryzen 7 3700X'],['Intel_LGA1200_Socket.jpg','Socket Intel LGA 1200']]));
+
+/* ---------- decodificador ---------- */
+var DEC=[
+ {n:[['Intel','Fabricante'],['Core i7','Familia: gama alta (i3 < i5 < i7 < i9).'],['14','Generación: 14.ª.'],['700','Número del modelo dentro de la generación: más alto, más rendimiento.'],['K','Sufijo K: desbloqueado, permite overclocking.']]},
+ {n:[['Intel','Fabricante'],['Core i5','Familia: gama media.'],['14','Generación: 14.ª.'],['400','Número del modelo.'],['F','Sufijo F: sin gráficos integrados. Necesita tarjeta de video.']]},
+ {n:[['AMD','Fabricante'],['Ryzen 5','Familia: gama media (3 < 5 < 7 < 9).'],['8','Serie 8000.'],['600','Modelo dentro de la serie.'],['G','Sufijo G: gráficos Radeon integrados más potentes.']]},
+ {n:[['Intel','Fabricante'],['Core i7','Familia: gama alta.'],['13','Generación: 13.ª.'],['700','Número del modelo.'],['H','Sufijo H: laptop de alto rendimiento. U sería bajo consumo.']]}];
+var di=0;
+function decPick(){$('dec-pick').innerHTML=DEC.map(function(d,i){var s=d.n.map(function(x){return x[0]}).join(' ').replace(/ (\d)/,' $1');return '<button data-di="'+i+'" aria-pressed="'+(i===di)+'">'+fmt(d)+'</button>'}).join('');
+  [].forEach.call($('dec-pick').children,function(b){b.onclick=function(){di=+b.dataset.di;decPick()}});
+  var d=DEC[di];$('dec-name').innerHTML=d.n.map(function(x,i){return '<span data-pi="'+i+'" tabindex="0" role="button">'+x[0]+(i===2?'':'')+'</span>'}).join('');
+  [].forEach.call($('dec-name').children,function(s){s.onclick=s.onkeydown=function(e){if(e.type==='keydown'&&e.key!=='Enter')return;press($('dec-name'),'data-pi',s.dataset.pi);$('dec-msg').textContent=d.n[+s.dataset.pi][1]}});
+  $('dec-msg').textContent='Toca cada parte del nombre.'}
+function fmt(d){return d.n[0][0]+' '+d.n[1][0]+(d.n[0][0]==='AMD'?' ':'-')+d.n[2][0]+d.n[3][0]+d.n[4][0]}
+decPick();
+
+/* ---------- gráficos ---------- */
+Kit.sorter($('gx-chips'),$('gx-chips').closest('.slide'),[
+ ['Core i5-14400','y','Sin F: trae gráficos UHD integrados.'],['Core i5-14400F','n','La F: sin gráficos integrados.'],['Ryzen 5 8600G','y','La G: gráficos Radeon integrados.'],
+ ['Core i7-14700KF','n','KF: desbloqueado y sin gráficos.'],['Ryzen 7 7700','y','Ryzen 7000 y posteriores traen gráficos básicos.'],['Ryzen 5 5600X','n','Serie 5000 sin G: sin gráficos integrados.']
+],$('gx-msg'),'¡Completo! Antes de ensamblar, verifica en la ficha oficial si la CPU trae gráficos.');
+
+/* ---------- compatibilidad ---------- */
+var CPU=[['Core i5-12400','LGA1700',12],['Core i7-14700K','LGA1700',14],['Core Ultra 7 265K','LGA1851',15],['Ryzen 5 5600X','AM4',5000],['Ryzen 7 7800X3D','AM5',7000]];
+var MB=[['Tarjeta H610 (LGA1700)','LGA1700','2022'],['Tarjeta Z890 (LGA1851)','LGA1851','2024'],['Tarjeta B550 (AM4)','AM4','2020'],['Tarjeta B650 (AM5)','AM5','2022']];
+var ci=null,mi=null;
+function cpDraw(){$('cp-cpu').innerHTML=CPU.map(function(c,i){return '<button data-ci="'+i+'" aria-pressed="'+(i===ci)+'">'+c[0]+'<br><small>'+c[1]+'</small></button>'}).join('');
+  $('cp-mb').innerHTML=MB.map(function(m,i){return '<button data-mi="'+i+'" aria-pressed="'+(i===mi)+'">'+m[0]+'</button>'}).join('');
+  [].forEach.call($('cp-cpu').children,function(b){b.onclick=function(){ci=+b.dataset.ci;cpDraw()}});
+  [].forEach.call($('cp-mb').children,function(b){b.onclick=function(){mi=+b.dataset.mi;cpDraw()}});
+  if(ci===null||mi===null)return;var c=CPU[ci],m=MB[mi],v,l,bg;
+  if(c[1]!==m[1]){v='No';l='Sockets distintos: '+c[1]+' y '+m[1]+'. Físicamente no entra.';bg='#7A1E1E'}
+  else if(c[0]==='Core i7-14700K'&&m[0].indexOf('H610')>=0){v='Sí, con cuidado';l='Mismo socket, pero puede requerir actualizar el BIOS primero, y el chipset H610 no permite overclocking.';bg='#6B5410'}
+  else{v='Sí';l='Mismo socket y chipset compatible. Verifica la lista de CPU soportadas del fabricante.';bg='#14552F'}
+  $('cp-v').textContent=v;$('cp-l').textContent=l;$('cp-st').style.background=bg}
+cpDraw();
+
+/* ---------- instalación ---------- */
+var INS=[['LGA','Socket LGA','Los pines están en el socket (Intel, AMD AM5). Conserva la tapa protectora; un pin doblado puede dañar la tarjeta.','Intel_LGA1200_Socket.jpg','Socket Intel LGA 1200'],
+ ['PGA','Socket PGA','Los orificios están en el socket y los pines en la CPU (AMD AM4). Revisa los pines antes de instalar.','Socket_AM4.jpg','Socket AMD AM4'],
+ ['Pines','Pines de la CPU','Una CPU PGA se toma por los bordes. Al quitar el disipador, gíralo suavemente para no arrancarla del socket.','AMD_Ryzen_7_3700X_pins_IMGP3168_smial_wp.jpg','Pines de un Ryzen 7 3700X'],
+ ['Pasta','Pasta térmica','Una cantidad del tamaño de un guisante en el centro. Muchos disipadores traen pasta aplicada de fábrica.','NEC_Versa_2760MT_thermal_paste.jpg','Pasta térmica sobre la CPU']];
+var STEPS=['1. Pulsera ESD; abre la palanca ZIF.','2. Alinea el triángulo de la CPU con la marca del socket.','3. Colócala sin presión y cierra la palanca.','4. Pasta, disipador y ventilador en CPU_FAN.'];
+var ii=0;function insDraw(){var t=INS[ii];$('ins-tabs').innerHTML=INS.map(function(x,i){return '<button data-ii="'+i+'" aria-pressed="'+(i===ii)+'">'+x[0]+'</button>'}).join('');
+  [].forEach.call($('ins-tabs').children,function(b){b.onclick=function(){ii=+b.dataset.ii;insDraw()}});
+  Kit.setPhoto($('ins-img'),'D',CRED,t[3]);$('ins-img').alt=t[4];$('ins-alt').textContent=t[4];$('ins-cap').textContent=t[4];
+  $('ins-k').textContent=STEPS[ii];$('ins-h').textContent=t[1];$('ins-p').textContent=t[2]}
+insDraw();
+
+/* ---------- reloj ---------- */
+var turbo=false,hot=false;
+function clk(){var m=+$('mul').value;if(turbo)m=Math.min(60,m+8);if(hot)m=Math.max(8,Math.round(m*0.55));
+  $('mul-v').textContent=$('mul').value;var g=m/10;$('ghz').textContent=g.toFixed(1)+' GHz';
+  $('ghz-l').textContent=(m*100).toLocaleString('en-US')+' millones de ciclos por segundo'+(turbo?' · con turbo':'')+(hot?' · ¡throttling por calor!':'');
+  $('turbo').setAttribute('aria-pressed',turbo);$('hot').setAttribute('aria-pressed',hot);
+  var n=Math.max(4,Math.round(g*6));$('pulse').innerHTML=Array(n+1).join('<i></i>');
+  [].forEach.call($('pulse').children,function(x,i){x.style.height=(i%2?'100%':'25%')})}
+$('mul').oninput=clk;$('turbo').onclick=function(){turbo=!turbo;clk()};$('hot').onclick=function(){hot=!hot;clk()};clk();
+
+/* ---------- núcleos e hilos ---------- */
+var TH=[['4 núcleos · 4 hilos',4,0,false],['4 núcleos · 8 hilos',4,0,true],['8 núcleos · 16 hilos',8,0,true],['8 P + 12 E · 28 hilos',8,12,true]];
+var ti=0,done={};
+function cg(){var t=TH[ti];$('th-pick').innerHTML=TH.map(function(x,i){return '<button data-ti="'+i+'" aria-pressed="'+(i===ti)+'">'+x[0]+'</button>'}).join('');
+  [].forEach.call($('th-pick').children,function(b){b.onclick=function(){ti=+b.dataset.ti;cg()}});
+  var h='';for(var i=0;i<t[1];i++)h+='<i class="'+(t[3]?'ht':'')+'"></i>';for(i=0;i<t[2];i++)h+='<i class="e"></i>';$('cg').innerHTML=h;raceDraw()}
+function speed(t){return t[1]*(t[3]?1.25:1)+t[2]*0.6}
+function raceDraw(){$('race').innerHTML=TH.map(function(t,i){var s=done[i];return '<div class="ln"><span>'+t[0]+'</span><div class="tr"><b data-r="'+i+'" style="width:'+(s?s.w:0)+'%"></b></div><span>'+(s?s.t+' s':'')+'</span></div>'}).join('')}
+$('run').onclick=function(){var t=TH[ti],sec=Math.round(480/speed(t));var mx=480/speed(TH[0]);done[ti]={t:sec,w:Math.max(6,Math.round(sec/mx*100))};raceDraw();
+  $('run-msg').textContent=t[0]+': unos '+sec+' segundos. '+(t[3]?'Los hilos extra ayudan, pero un núcleo con dos hilos rinde ~25 % más, no el doble.':'Sin hilos extra, cada núcleo atiende una tarea a la vez.')};
+cg();
+
+/* ---------- caché ---------- */
+var LV=[['L1','1 ns','#C9A65A',2],['L2','4 ns','#B08D46',6],['L3','12 ns','#5E6A8C',16],['RAM','80 ns','#C0392B',100]];
+$('lvs').innerHTML=LV.map(function(l,i){return '<div class="lv"><span class="nm">'+l[0]+'</span><div class="tr"><b data-lv="'+i+'" style="background:'+l[2]+'"></b></div><span class="t" data-lt="'+i+'"></span></div>'}).join('');
+[].forEach.call($('hit').children,function(b){b.onclick=function(){var h=+b.dataset.h;press($('hit'),'data-h',h);
+  LV.forEach(function(l,i){var bar=document.querySelector('[data-lv="'+i+'"]'),t=document.querySelector('[data-lt="'+i+'"]');bar.style.width=i<=h?l[3]+'%':'0';t.textContent=i<=h?(i===h?'✓ ':'✗ ')+l[1]:''});
+  $('hit-msg').textContent=['¡Acierto en L1! El dato llega en ~1 ns.','No estaba en L1; lo encontró en L2: ~4 ns.','Falló L1 y L2; estaba en la L3 compartida: ~12 ns.','No estaba en ninguna caché: hay que ir a la RAM, unas 80 veces más lento que L1. Por eso más caché ayuda.'][h]}});
+
+/* ---------- bits ---------- */
+var BT={16:['64 KB','2¹⁶ = 65,536 bytes: las primeras PC.'],32:['4 GB','2³² = 4,294,967,296 bytes ≈ 4 GB. Por eso un sistema de 32 bits no aprovecha más de 4 GB de RAM.'],64:['16 exabytes','2⁶⁴ ≈ 18 trillones de bytes. En la práctica el límite lo pone la tarjeta madre y el sistema operativo.']};
+[].forEach.call($('bits').children,function(b){b.onclick=function(){press($('bits'),'data-b',b.dataset.b);$('bits-v').textContent=BT[b.dataset.b][0];$('bits-l').textContent=BT[b.dataset.b][1]}});
+
+/* ---------- virtualización ---------- */
+var vt=false;
+$('vt').onclick=function(){vt=!vt;$('vt').setAttribute('aria-pressed',vt);$('vt').textContent='UEFI/BIOS: Intel VT-x '+(vt?'Enabled':'Disabled');$('tm-vt').textContent=vt?'Habilitado':'Deshabilitado';$('tm-vt').style.color=vt?'#1E7A3F':'#B3261E';$('vm-msg').textContent=vt?'Virtualización habilitada. Prueba otra vez la máquina virtual.':'Virtualización deshabilitada en el UEFI/BIOS.'};
+$('vt').textContent='UEFI/BIOS: Intel VT-x Disabled';$('tm-vt').style.color='#B3261E';
+$('vm').onclick=function(){$('vm-msg').textContent=vt?'✓ La máquina virtual con Ubuntu arranca normalmente.':'✗ Error: «VT-x is disabled in the BIOS». Reinicia, entra al UEFI/BIOS y actívalo.'};
+
+/* ---------- temperatura ---------- */
+var ck='ok',ld='idle';
+var TT={ok:[38,72],dust:[48,92],paste:[55,99],fan:[70,100]};
+var TM={ok:['Temperaturas normales.','Normal bajo carga: por debajo de 85 °C.'],dust:['Algo alta en reposo.','Muy alta: el polvo tapa el disipador. Límpialo con aire comprimido.'],paste:['Alta en reposo.','¡Throttling! La CPU baja la velocidad para protegerse. Reemplaza la pasta térmica.'],fan:['¡Muy alta!','¡Se apaga sola al llegar al máximo (Tjmax)! Revisa el ventilador y su conexión a CPU_FAN.']};
+function tDraw(){press($('cool'),'data-k',ck);press($('load'),'data-l',ld);var t=TT[ck][ld==='idle'?0:1];
+  $('tv').textContent=t+' °C';$('nd').style.left='calc('+((t-20)/80*100)+'% - 4px)';
+  $('tl2').textContent=(ld==='idle'?'Reposo':'Carga completa')+' · '+{ok:'enfriamiento en buen estado',dust:'disipador con polvo',paste:'pasta térmica seca',fan:'ventilador detenido'}[ck]+'.';
+  $('tmsg').textContent=TM[ck][ld==='idle'?0:1];$('tmsg').style.background=t>=95?'#F8D9D7':t>=85?'#FDEBC8':'#fff'}
+[].forEach.call($('cool').children,function(b){b.onclick=function(){ck=b.dataset.k;tDraw()}});
+[].forEach.call($('load').children,function(b){b.onclick=function(){ld=b.dataset.l;tDraw()}});tDraw();
+
+/* ---------- diagnóstico ---------- */
+[['Se apaga sola o baja la velocidad','Sobrecalentamiento.','Revisa el ventilador, el polvo y la pasta térmica.'],
+ ['No da imagen con una CPU nueva','El BIOS no reconoce el modelo.','Actualiza el BIOS/UEFI y revisa la lista de CPU compatibles.'],
+ ['No hay imagen con una CPU F','La CPU no tiene gráficos integrados.','Instala una tarjeta de video y conecta el monitor a ella.'],
+ ['No enciende tras cambiar la CPU','Pines doblados o CPU mal asentada.','Revisa los pines con lupa y buena luz.'],
+ ['Mensaje «CPU fan error»','Ventilador no conectado a CPU_FAN.','Conéctalo al cabezal correcto.']
+].forEach(function(d){var b=document.createElement('button');b.textContent=d[0];b.setAttribute('aria-pressed','false');b.onclick=function(){
+  [].forEach.call($('dx').children,function(x){x.setAttribute('aria-pressed',x===b)});$('dx-k').textContent='CAUSA PROBABLE';$('dx-h').textContent=d[0];$('dx-c').textContent=d[1];$('dx-s').textContent='Qué hacer: '+d[2]};$('dx').appendChild(b)});
+
+/* ---------- ejercicio ---------- */
+Kit.quiz($('qz'),[
+ ['Un equipo tiene un Core i5-14400F y no tiene tarjeta de video. ¿Por qué no da imagen?',['El BIOS está dañado','La F indica que no tiene gráficos integrados','Le falta memoria RAM','El socket es PGA'],1,'Una CPU con sufijo F necesita una tarjeta de video.'],
+ ['¿Qué diferencia hay entre un núcleo y un hilo?',['Son lo mismo','El núcleo es físico; con Hyperthreading/SMT un núcleo atiende dos hilos','El hilo es más rápido que el núcleo','Los hilos están en la tarjeta madre'],1,'Dos hilos por núcleo mejoran el rendimiento, pero no lo duplican.'],
+ ['Reloj base de 100 MHz y multiplicador 42. ¿Cuál es la velocidad?',['42 MHz','420 MHz','4.2 GHz','142 MHz'],2,'100 MHz × 42 = 4,200 MHz = 4.2 GHz.'],
+ ['¿Cuánta memoria puede usar como máximo un sistema de 32 bits?',['Unos 4 GB','16 GB','64 GB','Sin límite'],0,'2³² = 4,294,967,296 bytes ≈ 4 GB.'],
+ ['VirtualBox dice que VT-x está deshabilitado. ¿Qué haces?',['Cambiar la CPU','Activar la virtualización en el UEFI/BIOS','Instalar más RAM','Desinstalar Windows'],1,'La virtualización se activa en el UEFI/BIOS (Intel VT-x o AMD-V).'],
+ ['Una CPU se apaga sola bajo carga. ¿Qué revisas primero?',['El monitor','Ventilador, polvo y pasta térmica','El teclado','La tarjeta de red'],1,'La mayoría de los apagados bajo carga son por calor.']
+]);
+
+Deck.start();
+})();
+</script>
+</body>
+</html>

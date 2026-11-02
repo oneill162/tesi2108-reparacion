@@ -13,9 +13,10 @@ Página del curso: https://oneill162.github.io/tesi2108-reparacion/
 | `unidadA.html` | Unidad A: Introducción (tema: museo de la computación) |
 | `unidadB.html` | Unidad B: La tarjeta madre (tema: la placa de circuito) |
 | `unidadC.html` | Unidad C: Fuentes de alimentación y electricidad (tema: el banco de pruebas) |
+| `unidadD.html` | Unidad D: Procesadores (tema: el chip bajo el microscopio) |
 | `assets/kit.js` | Piezas comunes desde la Unidad B: fotos, créditos, clasificador y ejercicio corto |
 | `assets/deck.css`, `assets/deck.js` | Motor común de las presentaciones (heredado de TESI 2105): escala, transiciones, barra, índice, temporizador |
-| `assets/img/A/`, `B/`, `C/` | Fotos de cada unidad (Wikimedia Commons; autor y licencia en la lámina de créditos) |
+| `assets/img/A/` a `D/` | Fotos de cada unidad (Wikimedia Commons; autor y licencia en la lámina de créditos) |
 | `assets/fonts/` | Schibsted Grotesk y JetBrains Mono (licencia SIL OFL) |
 
 ## Uso en clase
