@@ -1,0 +1,688 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Unidad G: Monitores · TESI 2108</title>
+<meta name="description" content="TESI 2108 Reparación de Computadoras. Unidad G: tipos de monitores, características, pantallas múltiples y diagnóstico, contada con la pantalla encendida.">
+<link rel="preload" href="assets/fonts/schibsted-grotesk-latin-800-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="assets/deck.css">
+<style>
+/* Tema de la Unidad G: la pantalla encendida. Monitor que se enciende, barras de prueba y subpíxeles RGB. */
+:root{--ground:#F3F4F7;--tone:#E2E4EA;--tone2:#C9CDD8;--ink:#14161C;--soft:#4A5060;--accent:#2F5BEA;--accent-ink:#fff;--field:#0C0D12;--field-ink:#EEF0F5;--hi:#FFD23F;--r:#FF3B3B;--g:#2BD96B;--b:#3B7BFF}
+#bar{background:#08090C}
+#map button.ch{background:transparent;box-shadow:inset 0 0 0 3px var(--hi)}
+#map button.ch.seen{background:var(--hi)}
+#map button.cur,#map button.ch.cur{background:#fff;box-shadow:none}
+button.go{background:var(--accent);color:#fff}
+button[aria-pressed=true]{background:var(--ink);color:#fff}
+
+/* capítulos: monitor que se enciende */
+.scr-ch{position:absolute;inset:0;padding:64px 80px;display:flex;flex-direction:column}
+.scr-ch .osd{font:600 22px var(--mono);color:var(--hi)}
+.scr-ch .ch-title{font-size:72px;line-height:.98;letter-spacing:-.035em;font-weight:800;max-width:600px;margin-top:18px}
+.scr-ch .what{font-size:26px;line-height:1.38;max-width:560px;margin-top:22px;opacity:.86}
+.scr-ch .rgb{margin-top:auto;display:flex;gap:6px;height:30px}
+.scr-ch .rgb i{width:12px;opacity:.9}
+.scr-ch .rgb i:nth-child(3n+1){background:var(--r)}.scr-ch .rgb i:nth-child(3n+2){background:var(--g)}.scr-ch .rgb i:nth-child(3n){background:var(--b)}
+.mon{position:absolute;right:70px;top:110px;width:520px}
+.mon .bz{background:#22252D;padding:14px 14px 22px;box-shadow:0 0 0 2px #333845}
+.mon .sc{position:relative;height:290px;background:#000;overflow:hidden}
+.mon .tpat{position:absolute;inset:0;display:flex;flex-direction:column;transform:scaleY(.004) scaleX(.6);filter:brightness(3);opacity:0}
+.slide.on .mon .tpat{animation:crt 1.1s cubic-bezier(.2,.8,.2,1) .25s forwards}
+@keyframes crt{0%{transform:scaleY(.004) scaleX(.6);filter:brightness(4);opacity:1}35%{transform:scaleY(.004) scaleX(1);filter:brightness(4);opacity:1}70%{transform:scaleY(1) scaleX(1);filter:brightness(1.6)}100%{transform:none;filter:none;opacity:1}}
+.tpat .b1{flex:6;display:flex}.tpat .b1 i{flex:1}
+.tpat .b2{flex:1;display:flex}.tpat .b2 i{flex:1}
+.tpat .b3{flex:2;display:flex}.tpat .b3 i{flex:1}
+.mon .big{position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);text-align:center;font:800 120px/1 var(--sans);color:#fff;text-shadow:0 4px 0 rgba(0,0,0,.5);opacity:0;transition:opacity .4s 1.3s}
+.slide.on .mon .big{opacity:1}
+.mon .osdb{position:absolute;left:12px;top:10px;font:600 15px var(--mono);color:#fff;background:rgba(0,0,0,.55);padding:4px 8px;opacity:0;transition:opacity .3s 1.5s}
+.slide.on .mon .osdb{opacity:1}
+.mon .st{width:120px;height:56px;margin:0 auto;background:#1A1C22;clip-path:polygon(35% 0,65% 0,70% 70%,100% 72%,100% 100%,0 100%,0 72%,30% 70%)}
+.mon .led{position:absolute;right:30px;bottom:8px;width:8px;height:8px;border-radius:50%;background:#2BD96B;box-shadow:0 0 8px #2BD96B}
+
+/* bloques */
+.ficha{background:#fff;padding:20px 24px}
+.ficha .k{font:600 17px var(--mono);color:var(--accent)}
+.ficha h3{margin-top:4px}
+.ficha p{font-size:20px;line-height:1.4;margin-top:8px;color:var(--soft)}
+.grid4{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+figure.foto{margin:0;background:#fff;padding:12px;display:flex;flex-direction:column}
+figure.foto .ph{flex:1;min-height:0;position:relative;background:var(--tone);overflow:hidden}
+figure.foto img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+figure.foto.contain img{object-fit:contain;background:#fff}
+figure.foto figcaption{font-size:15px;line-height:1.3;margin-top:8px;color:var(--soft)}
+figure.foto .ph .alt{position:absolute;inset:0;display:none;align-items:center;justify-content:center;text-align:center;padding:16px;font-size:20px;font-weight:600;color:var(--soft)}
+figure.foto.nofoto .ph .alt{display:flex}
+.msg{background:#fff;padding:14px 18px;font-size:21px;min-height:56px;margin-top:14px}
+.stat{background:var(--field);color:var(--field-ink);padding:16px 20px}
+.stat .v{font-size:46px;font-weight:800;letter-spacing:-.03em;line-height:1.05;color:var(--hi)}
+.stat .l{font-size:19px;margin-top:6px}
+.seg{display:flex;gap:8px;flex-wrap:wrap}
+.seg button{font-size:19px}
+.gal{display:grid;grid-template-columns:440px 1fr;gap:24px;margin-top:16px}
+label.rl{display:flex;justify-content:space-between;font-size:21px;font-weight:600;margin-top:10px}
+input[type=range]{width:100%;height:34px;accent-color:var(--accent)}
+
+/* píxel */
+.px{display:grid;grid-template-columns:330px 1fr 300px;gap:24px;margin-top:16px}
+.bigpx{height:330px;background:#000;display:flex;gap:10px;padding:18px}
+.bigpx i{flex:1;transition:opacity .15s}
+.swatch{height:120px;margin-top:12px;border:6px solid #fff}
+.px .hex{font:700 28px var(--mono);margin-top:10px}
+input.r{accent-color:#E02020}input.g{accent-color:#16A34A}input.b{accent-color:#2457E6}
+
+/* LCD capas */
+.lcd{display:grid;grid-template-columns:420px 1fr;gap:28px;margin-top:16px}
+.layers{display:flex;flex-direction:column;gap:6px}
+.layers button{text-align:left;font-size:19px;padding:12px 16px;background:#fff;border-left:10px solid var(--c,#999)}
+.layers button[aria-pressed=true]{background:var(--ink);color:#fff}
+.lscr{position:relative;height:290px;background:#05060a;overflow:hidden}
+.lscr .img{position:absolute;inset:0;background:linear-gradient(120deg,#ff6b3b,#ffd23f 30%,#2bd96b 55%,#3b7bff 80%,#8b3bff);transition:filter .4s}
+.lscr .img::after{content:"TESI 2108";position:absolute;left:0;right:0;top:40%;text-align:center;font:800 54px var(--sans);color:#fff}
+.lscr.dark .img{filter:brightness(.05)}
+.lscr .torch{position:absolute;inset:0;pointer-events:none;opacity:0;background:radial-gradient(circle at var(--x,50%) var(--y,50%),transparent 0 70px,rgba(5,6,10,.97) 110px)}
+.lscr.torch-on .torch{opacity:1}
+.lscr.torch-on .img{filter:brightness(.38)}
+
+/* ángulo de visión */
+.va{display:grid;grid-template-columns:1fr 380px;gap:26px;margin-top:14px}
+.vstage{height:320px;background:var(--tone);display:flex;align-items:center;justify-content:center;perspective:900px}
+.vscr{width:440px;height:260px;background:#111;padding:10px;transition:transform .2s}
+.vimg{width:100%;height:100%;display:flex;flex-direction:column;transition:filter .2s}
+.vimg .c{flex:3;display:flex}.vimg .c i{flex:1}
+.vimg .gr{flex:1;background:linear-gradient(90deg,#000,#fff)}
+.vimg .sk{flex:1;background:linear-gradient(90deg,#8d5524,#c68642,#e0ac69,#f1c27d,#ffdbac)}
+
+/* resolución */
+.res{display:grid;grid-template-columns:1fr 380px;gap:24px;margin-top:14px}
+.rbox{position:relative;height:420px;background:#fff}
+.rbox div{position:absolute;left:10px;bottom:10px;border:3px solid var(--c);color:var(--c);font:700 17px var(--mono);padding:4px 6px;transition:opacity .3s}
+.aspect{display:flex;gap:16px;align-items:flex-end;margin-top:12px}
+.aspect div{background:var(--field);color:#fff;font:700 16px var(--mono);display:flex;align-items:center;justify-content:center}
+.native{height:120px;background:#fff;margin-top:12px;display:flex;align-items:center;justify-content:center;font:600 30px var(--sans);transition:filter .3s}
+
+/* refresco */
+.strip{position:relative;height:120px;background:var(--field);margin-top:12px;overflow:hidden}
+.strip i{position:absolute;top:30px;width:60px;height:60px;border-radius:50%;background:var(--hi)}
+.strip i.g{opacity:.25}
+.anim{position:relative;height:90px;background:var(--field);margin-top:12px;overflow:hidden}
+.anim i{position:absolute;top:15px;width:60px;height:60px;border-radius:50%;background:var(--hi)}
+.bars{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+.bars .r{display:grid;grid-template-columns:90px 1fr 90px;gap:10px;align-items:center;font:600 19px var(--mono)}
+.bars .r b{display:block;height:26px;background:var(--accent)}
+
+/* proyector */
+.prj{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:14px}
+.wall{position:relative;height:300px;background:#C9C4BA;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.wall .im{background:linear-gradient(120deg,#ff6b3b,#ffd23f 30%,#2bd96b 55%,#3b7bff 80%,#8b3bff);display:flex;align-items:center;justify-content:center;font:800 34px var(--sans);color:#fff;transition:all .3s}
+
+/* privacidad y reflejo */
+.pv{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:14px}
+.pscr{position:relative;height:250px;background:#fff;border:14px solid #22252D;overflow:hidden}
+.pscr .doc{position:absolute;inset:0;padding:18px;font-size:20px;line-height:1.5;transition:opacity .2s}
+.pscr .shade{position:absolute;inset:0;background:#000;opacity:0;transition:opacity .2s}
+.pscr .refl{position:absolute;inset:0;pointer-events:none;transition:opacity .3s}
+
+/* Windows + P */
+.wp{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:16px}
+.dev{background:#fff;padding:14px}
+.dev h3{font-size:20px}
+.dsk{position:relative;height:220px;margin-top:8px;background:#000;overflow:hidden}
+.dsk .wall2{position:absolute;inset:0;background:linear-gradient(135deg,#1d3a8a,#2f5bea 60%,#6ea0ff)}
+.dsk .win{position:absolute;background:#fff;border-top:16px solid #2a2d36;font:600 15px var(--sans);padding:6px;color:#111}
+.dsk .tbar{position:absolute;left:0;right:0;bottom:0;height:20px;background:rgba(0,0,0,.6)}
+.dsk.off > *{display:none}
+.dsk.off::after{content:"Apagada";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#666;font:700 22px var(--mono)}
+
+/* configuración */
+.cfg{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:16px}
+.tiles{height:180px;background:#E9EBF0;position:relative;margin-top:8px}
+.tiles b{position:absolute;top:40px;width:150px;height:96px;background:#7D8AA6;color:#fff;font:800 44px var(--sans);display:flex;align-items:center;justify-content:center;transition:left .5s var(--ease-expo)}
+.tiles b.main{background:var(--accent)}
+.phys{display:flex;gap:30px;justify-content:center;margin-top:10px}
+.phys div{width:200px;height:130px;background:#22252D;padding:8px;position:relative}
+.phys div span{position:absolute;inset:8px;background:#2f5bea;display:flex;align-items:center;justify-content:center;font:800 70px var(--sans);color:#fff;opacity:0;transition:opacity .2s}
+.phys div.idn span{opacity:1}
+.phys div em{position:absolute;left:0;right:0;top:100%;text-align:center;font-style:normal;font-size:16px;color:var(--soft);margin-top:4px}
+
+/* método y aislamiento */
+.six{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-top:16px}
+.six button{text-align:left;background:#fff;padding:14px;font-size:18px;line-height:1.3;min-height:150px;display:flex;flex-direction:column;gap:6px;align-items:flex-start}
+.six button b{font:700 30px var(--mono);color:var(--accent)}
+.six button[aria-pressed=true]{background:var(--ink);color:#fff}
+.six button[aria-pressed=true] b{color:var(--hi)}
+.iso{display:grid;grid-template-columns:1fr 380px;gap:24px;margin-top:16px}
+.parts{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.parts button{background:#fff;text-align:left;padding:16px;font-size:20px;min-height:96px}
+.parts button small{display:block;font:600 15px var(--mono);color:var(--soft);margin-top:6px}
+.parts button[aria-pressed=true]{background:#1E9E4F;color:#fff}
+.parts button[aria-pressed=true] small{color:#d8ffe6}
+.tv{height:200px;background:#000;display:flex;align-items:center;justify-content:center;font:700 26px var(--mono);color:#fff;border:12px solid #22252D}
+.tv.ok{background:linear-gradient(120deg,#ff6b3b,#ffd23f 30%,#2bd96b 55%,#3b7bff 80%,#8b3bff)}
+
+/* diagnóstico y ejercicio */
+.dx{display:grid;grid-template-columns:400px 1fr;gap:24px;margin-top:16px}
+.dx .list{display:flex;flex-direction:column;gap:9px}
+.dx .list button{text-align:left;font-size:19px;padding:12px 16px;background:#fff}
+.dx .list button[aria-pressed=true]{background:var(--ink);color:#fff}
+.dx .ans{background:#fff;padding:22px 26px;min-height:320px}
+.dx .ans .k{font:600 17px var(--mono);color:var(--accent)}
+.dx .ans p{font-size:22px;margin-top:6px}
+.quiz{margin-top:16px}
+.quiz .qz-q{font-size:30px;font-weight:700;line-height:1.2;min-height:76px}
+.quiz .ops{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+.quiz .ops button{text-align:left;font-size:22px;padding:16px 18px;background:#fff;color:var(--ink)}
+.quiz .ops button.ok{background:#1E9E4F;color:#fff}
+.quiz .ops button.bad{background:#C0392B;color:#fff}
+.quiz .why{font-size:21px;margin-top:14px;min-height:62px;background:var(--tone);padding:12px 16px}
+.quiz .foot{display:flex;justify-content:space-between;align-items:center;margin-top:14px;font-size:21px;font-weight:600}
+.dots{display:flex;gap:6px}.dots i{width:22px;height:10px;background:var(--tone2)}.dots i.ok{background:#1E9E4F}.dots i.bad{background:#C0392B}.dots i.cur{background:var(--ink)}
+.discrow{position:absolute;left:72px;right:72px;bottom:40px}
+.slide.field-hi{background:var(--hi)}
+.field-hi .q{font-size:52px;line-height:1.05;letter-spacing:-.03em;font-weight:800;max-width:1120px}
+.cred-list{columns:2;column-gap:40px;font-size:14px;line-height:1.4;margin-top:12px;padding-left:22px}
+.cred-list a{color:var(--ink)}
+</style>
+</head>
+<body>
+<div id="viewport"><div id="stage" data-name="TESI 2108 · Unidad G">
+
+<!-- portada -->
+<section class="slide chapter" data-title="Portada">
+  <div class="scr-ch">
+    <div class="osd" data-a>HDMI 1 · TESI 2108</div>
+    <h1 class="mask" style="margin-top:20px;font-size:100px;max-width:600px"><span>Unidad G: Monitores</span></h1>
+    <p class="what" data-a>Semana 8 · lunes 19 de octubre de 2026<br>Prof. Eduardo O. De Jesús Arroyo · Instituto Tecnológico de Puerto Rico</p>
+    <div class="rgb" data-a></div>
+  </div>
+  <div class="mon" data-big="G" data-osd="1920 × 1080 · 60 Hz"></div>
+</section>
+
+<section class="slide" data-title="Al terminar la clase">
+  <h2 class="mask"><span>Al terminar la clase podrás…</span></h2>
+  <div class="grid4 gap">
+    <div class="ficha" data-a><div class="k">LCD · TN · IPS · VA · OLED · PROYECCIÓN</div><h3>Comparar las tecnologías</h3><p>De monitores y proyectores.</p></div>
+    <div class="ficha" data-a><div class="k">RESOLUCIÓN · PPI · HZ · MS · NITS</div><h3>Interpretar las características</h3><p>Resolución, densidad, refresco, respuesta y brillo.</p></div>
+    <div class="ficha" data-a><div class="k">WINDOWS + P</div><h3>Configurar pantallas múltiples</h3><p>En Windows, con monitor o proyector.</p></div>
+    <div class="ficha" data-a><div class="k">MÉTODO DE SEIS PASOS</div><h3>Diagnosticar fallas</h3><p>De monitores, aislando con piezas conocidas.</p></div>
+  </div>
+</section>
+
+<!-- CAP 1 -->
+<section class="slide chapter" data-title="01 · Tipos de monitores">
+  <div class="scr-ch">
+    <div class="osd" data-a>ENTRADA 01</div>
+    <h2 class="ch-title mask"><span>Tipos de monitores</span></h2>
+    <p class="what" data-a>Píxeles, LCD, paneles TN, IPS y VA, OLED, proyectores, CRT y plasma.</p>
+    <div class="rgb" data-a></div>
+  </div>
+  <div class="mon" data-big="01" data-osd="ENTRADA 01"></div>
+</section>
+
+<section class="slide" data-title="El píxel">
+  <h2 class="mask"><span>Mezcla la luz: rojo, verde y azul</span></h2>
+  <div class="px">
+    <div class="bigpx" id="bp" data-a><i style="background:#ff2020"></i><i style="background:#20e060"></i><i style="background:#2060ff"></i></div>
+    <div data-a>
+      <label class="rl" for="sr">Rojo <b id="vr"></b></label><input class="r" type="range" id="sr" min="0" max="255" value="255">
+      <label class="rl" for="sg">Verde <b id="vg"></b></label><input class="g" type="range" id="sg" min="0" max="255" value="210">
+      <label class="rl" for="sb">Azul <b id="vb"></b></label><input class="b" type="range" id="sb" min="0" max="255" value="63">
+      <div class="seg" style="margin-top:10px" id="pre"><button data-c="255,255,255">Blanco</button><button data-c="0,0,0">Negro</button><button data-c="255,255,0">Amarillo</button><button data-c="0,255,255">Cian</button><button data-c="255,0,255">Magenta</button></div>
+      <div class="cols" style="grid-template-columns:200px 1fr;gap:16px;align-items:center"><div class="swatch" id="sw"></div><div><div class="hex" id="hx"></div><p class="small">256 × 256 × 256 ≈ 16.7 millones de colores con 8 bits por color.</p></div></div>
+    </div>
+    <div data-a style="display:flex;flex-direction:column;gap:12px">
+      <figure class="foto" style="height:190px"><div class="ph"><img data-cm="LCD subpixels.jpg" alt="Subpíxeles de una pantalla LCD vistos de cerca"><div class="alt">Subpíxeles LCD</div></div><figcaption>LCD de cerca: tiras roja, verde y azul.</figcaption></figure>
+      <figure class="foto" style="height:190px"><div class="ph"><img data-cm="OLED SUBPIXELS.jpg" alt="Subpíxeles de una pantalla OLED vistos de cerca"><div class="alt">Subpíxeles OLED</div></div><figcaption>OLED: cada subpíxel emite su propia luz.</figcaption></figure>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-title="¿Cómo funciona un LCD?">
+  <h2 class="mask"><span>El LCD no produce luz: es una persiana</span></h2>
+  <div class="lcd">
+    <div data-a>
+      <div class="layers" id="ly"></div>
+      <div class="msg" id="ly-m" style="min-height:96px">Toca cada capa, de atrás hacia adelante.</div>
+    </div>
+    <div data-a>
+      <div class="lscr" id="lscr"><div class="img"></div><div class="torch"></div></div>
+      <div class="row" style="margin-top:12px"><button id="blo">Falla la retroiluminación</button><button id="tor">Prueba de la linterna</button><button id="bfix">Reparar</button></div>
+      <div class="cols" style="grid-template-columns:1fr 240px;gap:14px;margin-top:10px;align-items:center">
+        <p class="body" id="lcd-m" style="font-size:20px">Un monitor «LED» es un LCD con retroiluminación LED (antes se usaban lámparas CCFL).</p>
+        <figure class="foto" style="height:130px"><div class="ph"><img data-cm="LCD-TV Backlight with CCFL.jpg" alt="Retroiluminación de un televisor LCD con lámparas CCFL"><div class="alt">Lámparas CCFL</div></div></figure>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-title="TN, IPS y VA">
+  <h2 class="mask"><span>Mira la pantalla de lado: TN, IPS y VA</span></h2>
+  <div class="va">
+    <div data-a>
+      <div class="vstage"><div class="vscr" id="vs"><div class="vimg" id="vi"><div class="c"></div><div class="gr"></div><div class="sk"></div></div></div></div>
+      <label class="rl" for="ang">Ángulo de visión <b id="angv"></b></label><input type="range" id="ang" min="0" max="70" value="0">
+    </div>
+    <div data-a>
+      <div class="seg" id="pt"><button data-p="tn">TN</button><button data-p="ips">IPS</button><button data-p="va">VA</button></div>
+      <div class="ficha" style="margin-top:12px;min-height:250px"><div class="k" id="pk"></div><h3 id="ph"></h3><p id="pp"></p><p id="pu" style="color:var(--accent);font-weight:600"></p></div>
+      <figure class="foto" style="height:120px;margin-top:10px"><div class="ph"><img data-cm="Portrait LCD polarization.jpg" alt="El mismo monitor LCD visto de frente y de lado, con los colores cambiados"><div class="alt">Monitor visto de lado</div></div><figcaption>Monitor real visto de lado: los colores cambian.</figcaption></figure>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-title="OLED, proyectores, CRT y plasma">
+  <h2 class="mask"><span>OLED, proyectores, CRT y plasma</span></h2>
+  <div class="gal">
+    <figure class="foto" data-a style="height:440px"><div class="ph"><img id="g-img" alt=""><div class="alt" id="g-alt"></div></div><figcaption id="g-cap"></figcaption></figure>
+    <div data-a>
+      <div class="seg" id="g-tabs"></div>
+      <div class="ficha" style="margin-top:14px;min-height:300px"><div class="k" id="g-k"></div><h3 id="g-h" style="font-size:36px"></h3><p id="g-p" style="font-size:23px"></p></div>
+    </div>
+  </div>
+</section>
+
+<!-- CAP 2 -->
+<section class="slide chapter" data-title="02 · Características">
+  <div class="scr-ch">
+    <div class="osd" data-a>ENTRADA 02</div>
+    <h2 class="ch-title mask"><span>Características</span></h2>
+    <p class="what" data-a>Resolución, densidad, refresco, respuesta, brillo, señal y filtros.</p>
+    <div class="rgb" data-a></div>
+  </div>
+  <div class="mon" data-big="02" data-osd="2560 × 1440 · 144 Hz"></div>
+</section>
+
+<section class="slide" data-title="Resolución y relación de aspecto">
+  <h2 class="mask"><span>Resolución a escala y resolución nativa</span></h2>
+  <div class="res">
+    <div class="rbox" id="rb" data-a></div>
+    <div data-a>
+      <h3>Relación de aspecto</h3>
+      <div class="aspect"><div style="width:144px;height:81px">16:9</div><div style="width:128px;height:80px">16:10</div><div style="width:189px;height:81px">21:9</div><div style="width:108px;height:81px">4:3</div></div>
+      <h3 style="margin-top:18px">Monitor Full HD a otra resolución</h3>
+      <div class="seg" id="nat" style="margin-top:8px"><button data-n="0">1920 × 1080</button><button data-n="1">1600 × 900</button><button data-n="2">1280 × 720</button></div>
+      <div class="native" id="ntx">Texto en pantalla</div>
+      <p class="small" id="nm" style="margin-top:6px"></p>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-title="Densidad de píxeles">
+  <h2 class="mask"><span>Calcula la densidad (PPI)</span></h2>
+  <div class="cols" style="grid-template-columns:1fr 1fr;gap:28px;margin-top:16px">
+    <div data-a>
+      <div class="seg" id="pp-pre"><button data-v="1920,1080,24">24" Full HD</button><button data-v="2560,1440,27">27" QHD</button><button data-v="3840,2160,27">27" 4K</button><button data-v="1920,1080,15.6">Laptop 15.6"</button><button data-v="2556,1179,6.1">Teléfono 6.1"</button></div>
+      <label class="rl" for="pw">Ancho <b id="pwv"></b></label><input type="range" id="pw" min="1280" max="3840" step="16" value="1920">
+      <label class="rl" for="ph2">Alto <b id="phv"></b></label><input type="range" id="ph2" min="720" max="2160" step="9" value="1080">
+      <label class="rl" for="pd">Diagonal <b id="pdv"></b></label><input type="range" id="pd" min="5" max="34" step="0.1" value="24">
+    </div>
+    <div data-a>
+      <div class="stat"><div class="v" id="ppi"></div><div class="l" id="ppl"></div></div>
+      <div class="msg" id="ppf" style="font:600 22px var(--mono)"></div>
+      <p class="small">PPI = √(ancho² + alto²) ÷ diagonal en pulgadas. Mayor densidad: imagen más nítida a la misma distancia.</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-title="Refresco y respuesta">
+  <h2 class="mask"><span>Refresco (Hz) y tiempo de respuesta (ms)</span></h2>
+  <div class="cols" style="grid-template-columns:1fr 360px;gap:24px;margin-top:12px">
+    <div data-a>
+      <div class="seg" id="hz"><button data-h="30">30 Hz</button><button data-h="60">60 Hz</button><button data-h="144">144 Hz</button><button data-h="240">240 Hz</button></div>
+      <p class="small" style="margin-top:8px">Una pelota cruza la pantalla en 0.25 s. Cada círculo es una imagen que el monitor muestra:</p>
+      <div class="strip" id="strip"></div>
+      <label class="rl" for="rt">Tiempo de respuesta del panel <b id="rtv"></b></label><input type="range" id="rt" min="1" max="25" value="5">
+      <div class="anim" id="anim"><i id="ball"></i></div>
+    </div>
+    <div data-a>
+      <div class="stat"><div class="v" id="hzv"></div><div class="l" id="hzl"></div></div>
+      <div class="bars" id="hzb"></div>
+      <p class="small" style="margin-top:10px">Más de 60 Hz necesita DisplayPort o HDMI 2.0 o superior. Un proyector del salón suele mostrar 60 Hz.</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-title="Brillo: nits y lúmenes">
+  <h2 class="mask"><span>Brillo: ¿se verá el proyector en el salón?</span></h2>
+  <div class="prj">
+    <div data-a>
+      <div class="wall" id="wall"><div class="im" id="wim">TESI 2108</div></div>
+      <figure class="foto" style="height:120px;margin-top:10px;width:220px"><div class="ph"><img data-cm="EPSON CH-TW5400 LCD PROJECTOR.jpg" alt="Proyector LCD Epson"><div class="alt">Proyector</div></div></figure>
+    </div>
+    <div data-a>
+      <label class="rl" for="lm">Proyector <b id="lmv"></b></label><input type="range" id="lm" min="1000" max="6000" step="250" value="3000">
+      <label class="rl" for="sz">Tamaño de la imagen (diagonal) <b id="szv"></b></label><input type="range" id="sz" min="60" max="150" step="10" value="100">
+      <h3 style="margin-top:10px">Luz del salón</h3><div class="seg" id="room" style="margin-top:6px"><button data-r="0">Oscuro</button><button data-r="1">Luz tenue</button><button data-r="2">Luces encendidas</button></div>
+      <div class="stat" style="margin-top:12px"><div class="v" id="bv"></div><div class="l" id="bl"></div></div>
+      <p class="small" style="margin-top:8px">Monitores: nits (cd/m²); oficina 250–350, HDR 400 o más. Proyectores: lúmenes ANSI. Simulación aproximada.</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-title="Filtros y acabado">
+  <h2 class="mask"><span>Filtro de privacidad y acabado de pantalla</span></h2>
+  <div class="pv">
+    <div data-a>
+      <h3>Filtro de privacidad</h3>
+      <div class="seg" id="prv" style="margin-top:6px"><button data-v="0">Sin filtro</button><button data-v="1">Con filtro</button></div>
+      <div class="pscr" style="margin-top:10px"><div class="doc" id="doc"><b>Expediente médico</b><br>Paciente: J. Rivera<br>Diagnóstico: confidencial<br>Seguro: ••• •• 4821</div><div class="shade" id="shade"></div></div>
+      <label class="rl" for="pa">Te miran desde un lado <b id="pav"></b></label><input type="range" id="pa" min="0" max="70" value="0">
+    </div>
+    <div data-a>
+      <h3>Acabado</h3>
+      <div class="seg" id="fin" style="margin-top:6px"><button data-v="m">Mate (antirreflejo)</button><button data-v="g">Brillante (glossy)</button></div>
+      <div class="pscr" style="margin-top:10px;background:#111"><div class="doc" style="color:#fff;background:linear-gradient(120deg,#ff6b3b,#ffd23f 30%,#2bd96b 55%,#3b7bff 80%,#8b3bff)"><b>Película</b></div><div class="refl" id="refl"></div></div>
+      <p class="body" id="fm" style="margin-top:10px;font-size:20px"></p>
+    </div>
+  </div>
+</section>
+
+<!-- CAP 3 -->
+<section class="slide chapter" data-title="03 · Pantallas múltiples">
+  <div class="scr-ch">
+    <div class="osd" data-a>ENTRADA 03</div>
+    <h2 class="ch-title mask"><span>Pantallas múltiples</span></h2>
+    <p class="what" data-a>Los modos de Windows + P y la configuración en Windows.</p>
+    <div class="rgb" data-a></div>
+  </div>
+  <div class="mon" data-big="03" data-osd="DUPLICAR · EXTENDER"></div>
+</section>
+
+<section class="slide" data-title="Windows + P">
+  <h2 class="mask"><span>Windows + P: escoge el modo de proyección</span></h2>
+  <div class="seg" id="wpm" data-a style="margin-top:14px"><button data-m="pc">Solo pantalla de PC</button><button data-m="dup">Duplicar</button><button data-m="ext">Extender</button><button data-m="sec">Solo segunda pantalla</button></div>
+  <div class="wp" data-a>
+    <div class="dev"><h3>Laptop (pantalla 1)</h3><div class="dsk" id="d1"></div></div>
+    <div class="dev"><h3>Proyector (pantalla 2)</h3><div class="dsk" id="d2"></div></div>
+  </div>
+  <div class="msg" id="wpmsg" data-a></div>
+</section>
+
+<section class="slide" data-title="Configuración en Windows">
+  <h2 class="mask"><span>Configuración › Sistema › Pantalla</span></h2>
+  <div class="cfg">
+    <div data-a>
+      <p class="small">Así los ve Windows (arrástralos con el botón):</p>
+      <div class="tiles" id="tiles"><b data-t="1" class="main">1</b><b data-t="2">2</b></div>
+      <div class="row" style="margin-top:10px"><button class="go" id="idn">Identificar</button><button id="swp">Mover el 2 al otro lado</button><button id="mainb">Hacer principal el 2</button></div>
+      <div class="msg" id="cfm" style="min-height:96px"></div>
+    </div>
+    <div data-a>
+      <p class="small">Así están en el escritorio de verdad:</p>
+      <div class="phys"><div id="pl"><span>2</span><em>Monitor de la izquierda</em></div><div id="pr"><span>1</span><em>Monitor de la derecha</em></div></div>
+      <figure class="foto" style="height:180px;margin-top:40px"><div class="ph"><img data-cm="Triplehawx.JPG" alt="Tres monitores en un escritorio, extendidos como uno solo"><div class="alt">Tres monitores</div></div><figcaption>Extender: tres monitores ordenados como un escritorio.</figcaption></figure>
+    </div>
+  </div>
+</section>
+
+<!-- CAP 4 -->
+<section class="slide chapter" data-title="04 · Fallas y diagnóstico">
+  <div class="scr-ch">
+    <div class="osd" data-a>SIN SEÑAL</div>
+    <h2 class="ch-title mask"><span>Fallas y diagnóstico</span></h2>
+    <p class="what" data-a>El método de seis pasos, aislar con piezas conocidas, síntomas y seguridad.</p>
+    <div class="rgb" data-a></div>
+  </div>
+  <div class="mon" data-big="04" data-osd="SIN SEÑAL"></div>
+</section>
+
+<section class="slide" data-title="Método de seis pasos">
+  <h2 class="mask"><span>Método de seis pasos (CompTIA): un caso real</span></h2>
+  <div class="six" id="six" data-a>
+    <button data-s="0"><b>1</b>Identifica el problema</button>
+    <button data-s="1"><b>2</b>Establece una teoría</button>
+    <button data-s="2"><b>3</b>Prueba la teoría</button>
+    <button data-s="3"><b>4</b>Planifica e implementa</button>
+    <button data-s="4"><b>5</b>Verifica y previene</button>
+    <button data-s="5"><b>6</b>Documenta</button>
+  </div>
+  <div class="msg" id="six-m" data-a style="font-size:23px;min-height:130px">Caso: en el salón A-208 un monitor dice «Sin señal». Toca cada paso.</div>
+</section>
+
+<section class="slide" data-title="Aislar la falla">
+  <h2 class="mask"><span>Aísla la falla: cambia una pieza a la vez</span></h2>
+  <div class="iso">
+    <div data-a>
+      <p class="small">Toca una pieza para cambiarla por una que sabes que funciona; luego pulsa Probar.</p>
+      <div class="parts" id="parts" style="margin-top:10px"></div>
+      <div class="row" style="margin-top:12px"><button class="go" id="test">Probar</button><button id="newc">Caso nuevo</button></div>
+    </div>
+    <div data-a>
+      <div class="tv" id="tv">Sin señal</div>
+      <div class="msg" id="isom" style="min-height:150px">Hay una pieza dañada. Encuéntrala con la menor cantidad de pruebas.</div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-title="Sin imagen o imagen pobre">
+  <h2 class="mask"><span>Síntomas: sin imagen o imagen pobre</span></h2>
+  <div class="dx"><div class="list" id="dx1" data-a></div>
+    <div class="ans" data-a><div class="k" id="dx1-k">SÍNTOMA</div><h3 id="dx1-h" style="font-size:30px">Escoge un síntoma</h3><p id="dx1-c"></p><p id="dx1-s" style="color:var(--soft)"></p></div></div>
+</section>
+
+<section class="slide" data-title="Pantalla y color">
+  <h2 class="mask"><span>Síntomas de pantalla y color</span></h2>
+  <div class="dx" style="grid-template-columns:380px 1fr 300px"><div class="list" id="dx2" data-a></div>
+    <div class="ans" data-a><div class="k" id="dx2-k">SÍNTOMA</div><h3 id="dx2-h" style="font-size:30px">Escoge un síntoma</h3><p id="dx2-c"></p><p id="dx2-s" style="color:var(--soft)"></p></div>
+    <figure class="foto nofoto" data-a style="height:320px"><div class="ph"><img id="dx2-img" alt=""><div class="alt" id="dx2-alt">Escoge un síntoma</div></div><figcaption id="dx2-cap"></figcaption></figure></div>
+</section>
+
+<section class="slide" data-title="Seguridad y desecho">
+  <h2 class="mask"><span>Seguridad y desecho</span></h2>
+  <div class="cols" style="grid-template-columns:1fr 1fr 1fr;gap:18px;margin-top:16px">
+    <figure class="foto" data-a style="height:230px"><div class="ph"><img data-cm="Broken NEC CRT computer monitor 20080509c.jpg" alt="Monitor CRT roto desechado en la calle"><div class="alt">CRT roto</div></div><figcaption>Así no: un CRT roto en la calle (plomo y alto voltaje).</figcaption></figure>
+    <figure class="foto" data-a style="height:230px"><div class="ph"><img data-cm="TV and Computer Monitor Recycling Pen - geograph.org.uk - 1025508.jpg" alt="Área de reciclaje de televisores y monitores"><div class="alt">Reciclaje</div></div><figcaption>Así sí: centro de reciclaje electrónico autorizado.</figcaption></figure>
+    <figure class="foto" data-a style="height:230px"><div class="ph"><img data-cm="HP Pavilion v72 17 inch CRT Monitor front view IMG 9419.JPG" alt="Monitor CRT de 17 pulgadas"><div class="alt">Monitor CRT</div></div><figcaption>El tubo guarda miles de voltios aun desconectado.</figcaption></figure>
+  </div>
+  <div class="grid4" data-a style="grid-template-columns:repeat(4,1fr);margin-top:14px">
+    <div class="ficha"><div class="k">NO ABRIR</div><h3>Alto voltaje</h3><p>CRT e inversores de LCD antiguos.</p></div>
+    <div class="ficha"><div class="k">PELIGROSOS</div><h3>Materiales</h3><p>Plomo en CRT; mercurio en lámparas CCFL.</p></div>
+    <div class="ficha"><div class="k">RECICLAJE</div><h3>Desecho</h3><p>Centros autorizados, nunca la basura común.</p></div>
+    <div class="ficha"><div class="k">MANEJO</div><h3>Entre dos</h3><p>No presiones el panel al cargarlo.</p></div>
+  </div>
+</section>
+
+<section class="slide field-hi" data-title="Actividad: pantallas múltiples">
+  <p class="small" style="color:var(--ink);font-size:24px;font-weight:700">Actividad en el laboratorio A-208 · en parejas</p>
+  <p class="q sub">Conecta un segundo monitor o el proyector. Prueba los cuatro modos de Windows + P. En Extender, ordena los monitores, escoge el principal y la resolución nativa. Documenta cable, puerto, resolución y frecuencia.</p>
+  <div class="discrow"><div class="timer" data-timer="1500"></div></div>
+</section>
+
+<section class="slide" data-title="Ejercicio corto">
+  <h2 class="mask"><span>Ejercicio corto: seis preguntas</span></h2>
+  <div class="quiz" id="qz" data-a>
+    <div class="qz-q"></div><div class="ops"></div><div class="why"></div>
+    <div class="foot"><div class="dots"></div><span class="qz-n"></span><button class="go qz-next">Siguiente</button></div>
+  </div>
+</section>
+
+<section class="slide" data-title="Créditos y referencias">
+  <h2 class="mask"><span>Créditos de las fotos y referencias</span></h2>
+  <p class="small sub">Fotos de Wikimedia Commons, guardadas con la presentación. Cada enlace lleva a la página del archivo.</p>
+  <ol class="cred-list" id="creds"></ol>
+  <p class="small" style="margin-top:10px">Referencias: CompTIA. (2025). <i>CompTIA A+ Core 1 (220-1201) exam objectives</i>. · Meyers, M. (2025). <i>CompTIA A+ certification all-in-one exam guide</i> (11th ed.). McGraw-Hill · Microsoft. (s.f.). How to use multiple monitors in Windows. · ITPR. (2026). Prontuario TESI 2108 (rev. mayo 2026).</p>
+</section>
+
+<section class="slide chapter" data-title="Cierre">
+  <div class="scr-ch">
+    <div class="osd" data-a>APAGANDO…</div>
+    <h2 class="ch-title mask"><span>Próxima: dispositivos periféricos</span></h2>
+    <p class="what" data-a>Lunes 26 de octubre, Unidad H. Anota los datos de tu monitor: tipo de panel, resolución y refresco.</p>
+    <div class="rgb" data-a></div>
+  </div>
+  <div class="mon" data-big="H" data-osd="PRÓXIMA ENTRADA"></div>
+</section>
+
+</div></div>
+<script src="assets/deck.js"></script>
+<script src="assets/kit.js"></script>
+<script>
+(function(){
+'use strict';
+var $=function(i){return document.getElementById(i)};
+var CRED={"LCD subpixels.jpg": {"f": "LCD_subpixels", "a": "Politelyinsulting", "l": "CC BY-SA 3.0"}, "OLED SUBPIXELS.jpg": {"f": "OLED_SUBPIXELS", "a": "TECH EDU", "l": "CC BY-SA 4.0"}, "HP Pavilion v72 17 inch CRT Monitor front view IMG 9419.JPG": {"f": "HP_Pavilion_v72_17_inch_CRT_Monitor_front_view_IMG_9419", "a": "Scott A. Miller", "l": "CC BY 3.0"}, "Pioneer PDP-436XDE.jpg": {"f": "Pioneer_PDP_436XDE", "a": "Myling", "l": "CC BY-SA 3.0"}, "Texas Instruments DLP digital micromirror device.jpg": {"f": "Texas_Instruments_DLP_digital_micromirror_device", "a": "yellowcloud from Germany", "l": "CC BY 2.0"}, "EPSON CH-TW5400 LCD PROJECTOR.jpg": {"f": "EPSON_CH_TW5400_LCD_PROJECTOR", "a": "Dinkun Chen", "l": "CC BY-SA 4.0"}, "LCD-TV Backlight with CCFL.jpg": {"f": "LCD_TV_Backlight_with_CCFL", "a": "BBCLCD", "l": "CC0"}, "Plasma burn-in at DFW airport.jpg": {"f": "Plasma_burn_in_at_DFW_airport", "a": "Reswobslc at English Wikipedia", "l": "Public domain"}, "Screen Burn-in (Acer Iconia A1-810).jpg": {"f": "Screen_Burn_in_Acer_Iconia_A1_810", "a": "Kevin Foo (Foo Zhen Ning)", "l": "CC BY-SA 4.0"}, "Lcd display dead pixel.jpg": {"f": "Lcd_display_dead_pixel", "a": "Selçuk Oral (drumex)", "l": "CC BY-SA 3.0"}, "TV and Computer Monitor Recycling Pen - geograph.org.uk - 1025508.jpg": {"f": "TV_and_Computer_Monitor_Recycling_Pen_geograph_org_uk_102550", "a": "David Wright", "l": "CC BY-SA 2.0"}, "Dual monitor setup in a gaming room with keyboard and mouse in focus.jpg": {"f": "Dual_monitor_setup_in_a_gaming_room_with_keyboard_and_mouse_", "a": "Shixart1985", "l": "CC BY 2.0"}, "Triplehawx.JPG": {"f": "Triplehawx", "a": "Original uploader was Nongio at it.wikipedia", "l": "Public domain"}, "Portrait LCD polarization.jpg": {"f": "Portrait_LCD_polarization", "a": "The original uploader was Ddxc at English Wikipedia.", "l": "CC BY-SA 4.0"}, "Broken NEC CRT computer monitor 20080509c.jpg": {"f": "Broken_NEC_CRT_computer_monitor_20080509c", "a": "youngthousands from usa", "l": "CC BY 2.0"}, "Viewing-Cone-mB1.png": {"f": "Viewing_Cone_mB1", "a": "Panjasan", "l": "CC BY 2.5"}};
+function press(cont,attr,val){[].forEach.call(cont.querySelectorAll('['+attr+']'),function(b){b.setAttribute('aria-pressed',String(b.getAttribute(attr))===String(val))})}
+function each(el,fn){[].forEach.call(el.children,fn)}
+Kit.photos('G',CRED);
+var BARS=['#c0c0c0','#c0c000','#00c0c0','#00c000','#c000c0','#c00000','#0000c0'];
+
+/* ---------- capítulos: monitor con barras de prueba ---------- */
+[].forEach.call(document.querySelectorAll('.mon'),function(m){
+  m.innerHTML='<div class="bz"><div class="sc"><div class="tpat"><div class="b1">'+BARS.map(function(c){return '<i style="background:'+c+'"></i>'}).join('')+'</div><div class="b2">'+['#0000c0','#111','#c000c0','#111','#00c0c0','#111','#c0c0c0'].map(function(c){return '<i style="background:'+c+'"></i>'}).join('')+'</div><div class="b3">'+['#00214c','#fff','#32006a','#131313','#090909','#131313','#1d1d1d'].map(function(c){return '<i style="background:'+c+'"></i>'}).join('')+'</div></div><div class="big">'+m.dataset.big+'</div><div class="osdb">'+m.dataset.osd+'</div></div><div class="led" style="position:relative;margin:6px 0 0 auto;right:auto;bottom:auto"></div></div><div class="st"></div>'});
+[].forEach.call(document.querySelectorAll('.scr-ch .rgb'),function(r){r.innerHTML=new Array(31).join('<i></i>')});
+
+/* ---------- píxel RGB ---------- */
+function rgb(){var r=+$('sr').value,g=+$('sg').value,b=+$('sb').value,ch=$('bp').children;$('vr').textContent=r;$('vg').textContent=g;$('vb').textContent=b;
+  ch[0].style.opacity=.06+r/255*.94;ch[1].style.opacity=.06+g/255*.94;ch[2].style.opacity=.06+b/255*.94;$('sw').style.background='rgb('+r+','+g+','+b+')';
+  $('hx').textContent='#'+[r,g,b].map(function(x){return ('0'+x.toString(16)).slice(-2)}).join('').toUpperCase()}
+['sr','sg','sb'].forEach(function(i){$(i).oninput=rgb});
+each($('pre'),function(b){b.onclick=function(){var c=b.dataset.c.split(',');$('sr').value=c[0];$('sg').value=c[1];$('sb').value=c[2];rgb()}});rgb();
+
+/* ---------- capas del LCD ---------- */
+var LY=[['Retroiluminación (LED)','#FFD23F','Produce la luz blanca de fondo. Antes eran lámparas CCFL; hoy, LED.'],
+ ['Polarizador trasero','#9AA3B5','Deja pasar la luz que vibra en una sola dirección.'],
+ ['Cristal líquido','#2F5BEA','Con voltaje, los cristales giran y abren o cierran la «persiana» de cada subpíxel.'],
+ ['Filtro de color RGB','#E0405A','Tiñe la luz de rojo, verde o azul en cada subpíxel.'],
+ ['Polarizador frontal','#9AA3B5','Junto al trasero, decide cuánta luz sale: así se forma la imagen.']];
+$('ly').innerHTML=LY.map(function(l,i){return '<button data-l="'+i+'" style="--c:'+l[1]+'" aria-pressed="false">'+(i+1)+'. '+l[0]+'</button>'}).join('');
+each($('ly'),function(b){b.onclick=function(){press($('ly'),'data-l',b.dataset.l);$('ly-m').textContent=LY[+b.dataset.l][2]}});
+var ls=$('lscr');
+$('blo').onclick=function(){ls.classList.add('dark');ls.classList.remove('torch-on');$('lcd-m').textContent='La retroiluminación se apagó: la imagen sigue en el cristal líquido, pero no hay luz detrás. Parece que no hay imagen.'};
+$('tor').onclick=function(){if(!ls.classList.contains('dark')){$('lcd-m').textContent='Primero simula la falla de la retroiluminación.';return}ls.classList.add('torch-on');$('lcd-m').textContent='Con la linterna se ve la imagen tenue: confirma que falla la retroiluminación (o su inversor en monitores con CCFL). Mueve el ratón sobre la pantalla.'};
+$('bfix').onclick=function(){ls.classList.remove('dark','torch-on');$('lcd-m').textContent='Un monitor «LED» es un LCD con retroiluminación LED (antes se usaban lámparas CCFL).'};
+ls.onmousemove=function(e){var r=ls.getBoundingClientRect();ls.style.setProperty('--x',((e.clientX-r.left)/r.width*100)+'%');ls.style.setProperty('--y',((e.clientY-r.top)/r.height*100)+'%')};
+
+/* ---------- ángulo de visión ---------- */
+$('vi').querySelector('.c').innerHTML=BARS.concat(['#111']).map(function(c){return '<i style="background:'+c+'"></i>'}).join('');
+var PT={tn:['TWISTED NEMATIC','TN: muy rápido y económico','Desventaja: los colores y el contraste cambian mucho al mirar de lado.','Uso: juegos competitivos, oficina básica.'],
+ ips:['IN-PLANE SWITCHING','IPS: mejor color y ángulos','Desventaja: contraste menor; brillo en los negros.','Uso: diseño, fotografía, uso general.'],
+ va:['VERTICAL ALIGNMENT','VA: mejor contraste y negros','Desventaja: estela en movimientos rápidos y algo de cambio de tono de lado.','Uso: películas y uso general.']},pn='tn';
+function view(){var a=+$('ang').value,f;press($('pt'),'data-p',pn);$('angv').textContent=a+'°';
+  if(pn==='tn')f='contrast('+(1-a*.009)+') brightness('+(1+a*.012)+') saturate('+(1-a*.011)+') hue-rotate('+(a*.9)+'deg)';
+  else if(pn==='ips')f='contrast('+(1-a*.002)+') brightness('+(1-a*.002)+')';
+  else f='contrast('+(1-a*.004)+') saturate('+(1-a*.005)+') brightness('+(1+a*.004)+')';
+  $('vi').style.filter=f;$('vs').style.transform='rotateY('+(-a)+'deg)';
+  var t=PT[pn];$('pk').textContent=t[0];$('ph').textContent=t[1];$('pp').textContent=t[2];$('pu').textContent=t[3]}
+$('ang').oninput=view;each($('pt'),function(b){b.onclick=function(){pn=b.dataset.p;view()}});view();
+
+/* ---------- galería ---------- */
+var G=[{t:'OLED',k:'CADA PÍXEL EMITE LUZ',h:'OLED',p:'El píxel se apaga por completo: negro perfecto y gran contraste. Riesgo de quemado (burn-in) con imágenes fijas.',f:'OLED SUBPIXELS.jpg',alt:'Subpíxeles de una pantalla OLED vistos de cerca'},
+ {t:'Proyector LCD',k:'TRES PANELES LCD',h:'Proyector LCD',p:'Divide la luz en rojo, verde y azul y la pasa por tres paneles. Brillo en lúmenes; la lámpara o el láser tiene vida útil.',f:'EPSON CH-TW5400 LCD PROJECTOR.jpg',alt:'Proyector LCD Epson'},
+ {t:'Proyector DLP',k:'MICROESPEJOS',h:'Proyector DLP',p:'Un chip con millones de microespejos que se inclinan miles de veces por segundo para formar la imagen.',f:'Texas Instruments DLP digital micromirror device.jpg',alt:'Chip DLP de microespejos de Texas Instruments'},
+ {t:'CRT',k:'HISTÓRICO',h:'Tubo de rayos catódicos',p:'Un cañón de electrones pinta el fósforo de la pantalla. Pesado; guarda alto voltaje peligroso aun desconectado.',f:'HP Pavilion v72 17 inch CRT Monitor front view IMG 9419.JPG',alt:'Monitor CRT de 17 pulgadas'},
+ {t:'Plasma',k:'HISTÓRICO',h:'Plasma',p:'Celdas de gas que se encienden como pequeñas lámparas. Buen contraste, alto consumo y quemado de imagen.',f:'Pioneer PDP-436XDE.jpg',alt:'Televisor de plasma Pioneer'}],gi=0;
+function gal(){var g=G[gi];$('g-tabs').innerHTML=G.map(function(x,i){return '<button data-gi="'+i+'" aria-pressed="'+(i===gi)+'">'+x.t+'</button>'}).join('');
+  each($('g-tabs'),function(b){b.onclick=function(){gi=+b.dataset.gi;gal()}});
+  Kit.setPhoto($('g-img'),'G',CRED,g.f);$('g-img').alt=g.alt;$('g-alt').textContent=g.alt;$('g-cap').textContent=g.alt;$('g-k').textContent=g.k;$('g-h').textContent=g.h;$('g-p').textContent=g.p}
+gal();
+
+/* ---------- resolución ---------- */
+var RS=[['4K UHD',3840,2160,'#2F5BEA'],['QHD',2560,1440,'#1E9E4F'],['Full HD',1920,1080,'#C4561A'],['HD',1280,720,'#8B3BFF']],K=0.18;
+$('rb').innerHTML=RS.map(function(r){return '<div style="--c:'+r[3]+';width:'+(r[1]*K)+'px;height:'+(r[2]*K)+'px">'+r[0]+' '+r[1]+'×'+r[2]+'</div>'}).join('');
+var NT=[['0px','Nativa: un píxel de la imagen = un píxel del panel. Nítido.'],['0.9px','No nativa: el monitor estira la imagen y se ve borrosa.'],['1.6px','Más lejos de la nativa: aún más borrosa. Usa la resolución recomendada.']];
+each($('nat'),function(b){b.onclick=function(){press($('nat'),'data-n',b.dataset.n);var n=NT[+b.dataset.n];$('ntx').style.filter='blur('+n[0]+')';$('nm').textContent=n[1]}});$('nat').children[0].click();
+
+/* ---------- PPI ---------- */
+function ppi(){var w=+$('pw').value,h=+$('ph2').value,d=+$('pd').value,dp=Math.sqrt(w*w+h*h),p=dp/d;
+  $('pwv').textContent=w+' px';$('phv').textContent=h+' px';$('pdv').textContent=d.toFixed(1)+'"';
+  $('ppi').textContent=Math.round(p)+' PPI';$('ppl').textContent=p<100?'Se notan los píxeles de cerca.':p<150?'Nítido a distancia de escritorio.':p<250?'Muy nítido.':'Tan denso que el ojo no distingue los píxeles.';
+  $('ppf').textContent='√('+w+'² + '+h+'²) ≈ '+Math.round(dp).toLocaleString('en-US')+' px ÷ '+d+'"'}
+['pw','ph2','pd'].forEach(function(i){$(i).oninput=ppi});
+each($('pp-pre'),function(b){b.onclick=function(){var v=b.dataset.v.split(',');$('pw').max=Math.max(3840,v[0]);$('pw').value=v[0];$('ph2').value=v[1];$('pd').value=v[2];ppi()}});ppi();
+
+/* ---------- refresco ---------- */
+var hz=60,raf=null;
+$('hzb').innerHTML=[60,75,120,144,240].map(function(h){return '<div class="r"><span>'+h+' Hz</span><b style="width:'+(1000/h/16.7*100)+'%"></b><span>'+(1000/h).toFixed(1)+' ms</span></div>'}).join('');
+function strip(){press($('hz'),'data-h',hz);var n=Math.round(hz*.25),w=$('strip').clientWidth||1100,h='';
+  for(var i=0;i<n;i++){h+='<i class="'+(i<n-1?'g':'')+'" style="left:'+(i/(n-1||1)*(w-60))+'px"></i>'}$('strip').innerHTML=h;
+  $('hzv').textContent=(1000/hz).toFixed(1)+' ms';$('hzl').textContent='por imagen a '+hz+' Hz · '+n+' imágenes en 0.25 s'}
+each($('hz'),function(b){b.onclick=function(){hz=+b.dataset.h;strip()}});
+function rt(){var v=+$('rt').value;$('rtv').textContent=v+' ms';$('ball').style.boxShadow=v>4?(-(v-4)*3)+'px 0 '+(v*1.2)+'px rgba(255,210,63,.55)':'none'}
+$('rt').oninput=rt;rt();
+function loop(t){var w=$('anim').clientWidth-60,f=Math.floor(t/1000*hz),x=(f/hz*600)%(w*2);x=x>w?2*w-x:x;$('ball').style.left=x+'px';raf=requestAnimationFrame(loop)}
+document.addEventListener('deck:slide',function(e){cancelAnimationFrame(raf);if(e.detail.slide.dataset.title==='Refresco y respuesta'){strip();raf=requestAnimationFrame(loop)}});
+strip();
+
+/* ---------- proyector ---------- */
+var room=1;
+function prj(){var lm=+$('lm').value,sz=+$('sz').value,w=sz*.8716,h=sz*.4903,ft=w*h/144,fl=lm*.8/ft,need=[12,24,45][room];
+  press($('room'),'data-r',room);$('lmv').textContent=lm.toLocaleString('en-US')+' lúmenes';$('szv').textContent=sz+'"';
+  var q=fl/need,im=$('wim'),s=sz/150;im.style.width=(560*s)+'px';im.style.height=(315*s)+'px';
+  im.style.filter='saturate('+Math.min(1,q*.9)+') brightness('+Math.min(1.1,.4+q*.6)+') contrast('+Math.min(1,.35+q*.6)+')';im.style.opacity=Math.min(1,.35+q*.65);
+  $('wall').style.background=['#3b3a37','#8f8a80','#D8D3C8'][room];
+  $('bv').textContent=q>=1?'Se ve bien':q>=.6?'Se ve lavada':'Casi no se ve';$('bl').textContent='Para esta luz, '+(q>=1?'el proyector alcanza.':'necesitarías unos '+(Math.ceil(need*ft/.8/250)*250).toLocaleString('en-US')+' lúmenes o una imagen más pequeña.')}
+['lm','sz'].forEach(function(i){$(i).oninput=prj});each($('room'),function(b){b.onclick=function(){room=+b.dataset.r;prj()}});prj();
+
+/* ---------- privacidad y acabado ---------- */
+var prv=0,fin='m';
+function pv(){var a=+$('pa').value;press($('prv'),'data-v',prv);press($('fin'),'data-v',fin);$('pav').textContent=a+'°';
+  $('shade').style.opacity=prv?Math.min(1,Math.max(0,(a-12)/22)):Math.min(.15,a*.002);
+  $('refl').style.background=fin==='g'?'linear-gradient(115deg,transparent 30%,rgba(255,255,255,.75) 42%,rgba(255,255,255,.2) 55%,transparent 62%)':'rgba(255,255,255,.12)';
+  $('fm').textContent=fin==='g'?'Brillante: colores más vivos, pero refleja lámparas y ventanas.':'Mate: dispersa el reflejo; colores un poco menos vivos.'}
+$('pa').oninput=pv;each($('prv'),function(b){b.onclick=function(){prv=+b.dataset.v;pv()}});each($('fin'),function(b){b.onclick=function(){fin=b.dataset.v;pv()}});pv();
+
+/* ---------- Windows + P ---------- */
+function desk(win){return '<div class="wall2"></div>'+(win||'')+'<div class="tbar"></div>'}
+var W1='<div class="win" style="left:30px;top:30px;width:220px;height:120px">Presentación.pptx</div>',W2='<div class="win" style="left:40px;top:40px;width:200px;height:110px">Notas del profesor</div>';
+var WM={pc:['','off','Solo la laptop. El proyector queda apagado.'],dup:[W1,W1,'Lo mismo en ambas pantallas: el modo típico para presentar. Si las resoluciones son distintas, se usa la menor común.'],
+ ext:[W2,W1,'Un escritorio más grande: arrastras ventanas de una pantalla a la otra. Puedes ver tus notas y proyectar la presentación.'],sec:['off',W1,'Solo el proyector; la pantalla de la laptop se apaga.']};
+function wp(m){press($('wpm'),'data-m',m);var c=WM[m];['d1','d2'].forEach(function(id,i){var v=i?c[1]:c[0],d=$(id);d.className='dsk'+(v==='off'?' off':'');d.innerHTML=v==='off'?'':desk(v)});$('wpmsg').textContent=c[2]}
+each($('wpm'),function(b){b.onclick=function(){wp(b.dataset.m)}});wp('dup');
+
+/* ---------- configuración ---------- */
+var order=[1,2],main=1;
+function cfg(){var t=$('tiles');[].forEach.call(t.children,function(b){var n=+b.dataset.t;b.style.left=(60+order.indexOf(n)*156)+'px';b.classList.toggle('main',n===main)});
+  var ok=order[0]===2;$('cfm').textContent=ok?'¡Ordenados! Ahora el ratón pasa de un monitor al otro por el lado correcto.'+(main===2?' El 2 es el principal (barra de tareas e íconos).':''):'Desordenados: el 2 está a la izquierda en el escritorio, pero Windows lo tiene a la derecha. El ratón «salta» por el lado equivocado.'}
+$('swp').onclick=function(){order.reverse();cfg()};$('mainb').onclick=function(){main=main===1?2:1;$('mainb').textContent='Hacer principal el '+(main===1?2:1);cfg()};
+$('idn').onclick=function(){$('pl').classList.add('idn');$('pr').classList.add('idn');setTimeout(function(){$('pl').classList.remove('idn');$('pr').classList.remove('idn')},2200)};cfg();
+
+/* ---------- método de seis pasos ---------- */
+var SX=['El usuario dice que el monitor muestra «Sin señal» desde que movieron la mesa. Observas: la luz del monitor está encendida.','Cuestiona lo obvio: cable flojo o entrada equivocada en el monitor.','Revisas la entrada: está en HDMI 1 y el cable va a HDMI 2. Teoría confirmada. (Si no, pruebas otra teoría.)','Cambias la entrada a HDMI 2 (o mueves el cable al puerto correcto).','La imagen aparece en la resolución nativa. Prevención: rotulas el cable y aseguras que no quede tenso.','Anotas el problema, la causa, lo que hiciste y el resultado en la bitácora del laboratorio.'];
+each($('six'),function(b){b.setAttribute('aria-pressed','false');b.onclick=function(){press($('six'),'data-s',b.dataset.s);$('six-m').textContent=SX[+b.dataset.s]}});
+
+/* ---------- aislar ---------- */
+var PA=[['cable','Cable de video','otro cable que funciona'],['port','Puerto de la tarjeta','otro puerto de video'],['mon','Monitor','otro monitor que funciona'],['pc','Computadora','otra computadora']],bad,sw,tests;
+function newc(){bad=PA[Math.floor(Math.random()*PA.length)][0];sw={};tests=0;$('tv').className='tv';$('tv').textContent='Sin señal';$('isom').textContent='Hay una pieza dañada. Encuéntrala con la menor cantidad de pruebas.';parts()}
+function parts(){$('parts').innerHTML=PA.map(function(p){return '<button data-p="'+p[0]+'" aria-pressed="'+!!sw[p[0]]+'">'+p[1]+'<small>'+(sw[p[0]]?'Cambiado por '+p[2]:'Original')+'</small></button>'}).join('');
+  each($('parts'),function(b){b.onclick=function(){sw[b.dataset.p]=!sw[b.dataset.p];parts()}})}
+$('test').onclick=function(){tests++;var ch=Object.keys(sw).filter(function(k){return sw[k]}),ok=!!sw[bad],n=PA.filter(function(p){return p[0]===bad})[0][1];
+  $('tv').className='tv'+(ok?' ok':'');$('tv').textContent=ok?'':'Sin señal';
+  if(ok&&ch.length===1)$('isom').textContent='¡Imagen! Cambiaste una sola pieza: la culpable es «'+n+'». Lo encontraste en '+tests+' prueba'+(tests>1?'s':'')+'.';
+  else if(ok)$('isom').textContent='Funciona, pero cambiaste '+ch.length+' piezas a la vez: ¿cuál era la dañada? Devuelve todas menos una y prueba otra vez.';
+  else $('isom').textContent=(ch.length?'Sigue sin señal: la pieza dañada no es la que cambiaste. Devuélvela y prueba otra.':'Sin cambios, sigue sin señal. Cambia una pieza.')+' (Pruebas: '+tests+')'};
+$('newc').onclick=newc;newc();
+
+/* ---------- diagnóstico ---------- */
+function dx(id,D){D.forEach(function(d){var b=document.createElement('button');b.textContent=d[0];b.setAttribute('aria-pressed','false');b.onclick=function(){
+  each($(id),function(x){x.setAttribute('aria-pressed',x===b)});$(id+'-k').textContent='CAUSA PROBABLE';$(id+'-h').textContent=d[0];$(id+'-c').textContent=d[1];$(id+'-s').textContent='Qué hacer: '+d[2];
+  if($(id+'-img')){Kit.setPhoto($(id+'-img'),'G',CRED,d[3]||'');$(id+'-img').alt=d[4]||'';$(id+'-alt').textContent=d[4]||'Sin foto para este síntoma';$(id+'-cap').textContent=d[4]||''}};$(id).appendChild(b)})}
+dx('dx1',[['Sin imagen, luz del monitor apagada','Energía o fuente del monitor.','Revisar el cable de corriente y el tomacorriente.'],
+ ['Mensaje «Sin señal»','Cable, entrada o tarjeta de video.','Revisar el cable y la entrada; probar otro puerto.'],
+ ['Imagen muy oscura, se ve con linterna','Retroiluminación o inversor.','Reparación especializada o reemplazo.'],
+ ['Mensaje «Fuera de rango»','Resolución o frecuencia que el monitor no acepta.','Arrancar en modo seguro o con otro monitor y bajar la resolución.'],
+ ['Imagen borrosa','No está en la resolución nativa.','Configurar la resolución recomendada.']]);
+var DX2=[['Puntos fijos de color o negros','Píxeles atascados (de color) o muertos (negros).','Probar una utilidad que alterna colores; revisar la garantía.','Lcd display dead pixel.jpg','Píxel muerto en una pantalla LCD'],
+ ['Parpadeo','Cable flojo, frecuencia de refresco o retroiluminación que falla.','Revisar el cable y la frecuencia; probar otro cable.'],
+ ['Imagen fantasma permanente','Quemado de imagen (OLED o plasma).','Prevención: protector de pantalla y no dejar imágenes fijas.','Plasma burn-in at DFW airport.jpg','Pantalla de aeropuerto con la tabla de vuelos quemada en la imagen'],
+ ['Colores incorrectos o tinte','Cable VGA dañado o configuración del monitor.','Cambiar el cable; restablecer el monitor de fábrica.'],
+ ['Líneas verticales u horizontales','Panel, cable interno o tarjeta de video.','Aislar: probar con otro equipo u otro monitor.']];
+dx('dx2',DX2);
+
+/* ---------- ejercicio ---------- */
+Kit.quiz($('qz'),[
+ ['¿Por qué un monitor «LED» es en realidad un LCD?',['Porque los LED forman los píxeles','Porque la imagen la forma un panel LCD y los LED son solo la retroiluminación','Porque no usa cristal líquido','Porque es OLED'],1,'LED es solo la luz de fondo; la imagen la forman los cristales líquidos.'],
+ ['¿Cuánto dura cada imagen en un monitor de 144 Hz?',['16.7 ms','6.9 ms','1.44 ms','144 ms'],1,'1000 ÷ 144 ≈ 6.9 ms: el movimiento se ve más fluido.'],
+ ['¿Qué modo de Windows + P usas para presentar con un proyector?',['Solo pantalla de PC','Duplicar','Solo segunda pantalla','Ninguno'],1,'Duplicar muestra lo mismo en ambas; Extender sirve para trabajar con dos monitores.'],
+ ['Un monitor muestra una imagen muy oscura que se ve con una linterna. ¿Qué falla?',['La tarjeta de video','La retroiluminación (o su inversor)','El cable HDMI','La resolución'],1,'La imagen está en el panel, pero no hay luz detrás.'],
+ ['¿Qué panel LCD tiene los mejores colores y ángulos de visión?',['TN','VA','IPS','CRT'],2,'IPS: preferido para diseño y fotografía.'],
+ ['Al aislar una falla, ¿cuántas piezas cambias a la vez?',['Todas','Dos','Una sola','Ninguna'],2,'Una a la vez: si el problema se mueve con la pieza, esa es la culpable.']
+]);
+Kit.credits($('creds'),CRED,G.map(function(g){return [g.f,g.alt]}).concat(DX2.filter(function(d){return d[3]}).map(function(d){return [d[3],d[4]]})));
+
+Deck.start();
+})();
+</script>
+</body>
+</html>
