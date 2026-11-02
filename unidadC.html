@@ -1,0 +1,625 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Unidad C: Fuentes de alimentación · TESI 2108</title>
+<meta name="description" content="TESI 2108 Reparación de Computadoras. Unidad C: fuentes de alimentación y principios de electricidad, en un banco de pruebas eléctrico.">
+<link rel="preload" href="assets/fonts/schibsted-grotesk-latin-800-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="assets/deck.css">
+<style>
+/* Tema de la Unidad C: el banco de pruebas eléctrico. Pantallas de multímetro, rótulos de advertencia y cables por colores. */
+:root{--ground:#ECEDEA;--tone:#DEDFDA;--tone2:#CBCCC5;--ink:#151719;--soft:#4A4D50;--accent:#151719;--accent-ink:#FFC425;--field:#17191B;--field-ink:#F1F2EE;--hi:#FFC425;--lcd:#B9D8A0;--lcd-ink:#16230F;--y:#FFC425;--r:#D7262B;--o:#F28C1E;--g:#1E9E4F;--bl:#1F6FC9;--pu:#7B3FA0;--gr:#9AA0A6}
+#bar{background:#17191B}
+#map button.ch{background:transparent;box-shadow:inset 0 0 0 3px var(--y)}
+#map button.ch.seen{background:var(--y)}
+#map button.cur,#map button.ch.cur{background:#fff;box-shadow:none}
+
+/* capítulos: el panel del banco */
+.bench{position:absolute;inset:0;padding:64px 80px;display:flex;flex-direction:column}
+.bench .tag{display:inline-flex;align-self:flex-start;align-items:center;gap:12px;background:var(--y);color:#111;font-weight:800;font-size:22px;padding:8px 16px}
+.bench .tag i{width:0;height:0;border-left:13px solid transparent;border-right:13px solid transparent;border-bottom:22px solid #111;position:relative}
+.bench .ch-title{font-size:90px;line-height:.98;letter-spacing:-.035em;font-weight:800;max-width:780px;margin-top:22px}
+.bench .what{font-size:27px;line-height:1.38;max-width:700px;margin-top:22px;opacity:.86}
+.bench .wires{margin-top:auto;display:flex;gap:8px;height:18px}
+.bench .wires i{flex:1}
+@media (prefers-reduced-motion:no-preference){.entering .bench .wires i{animation:wire .9s var(--ease-expo) both}.entering .bench .wires i:nth-child(2){animation-delay:.08s}.entering .bench .wires i:nth-child(3){animation-delay:.16s}.entering .bench .wires i:nth-child(4){animation-delay:.24s}.entering .bench .wires i:nth-child(5){animation-delay:.32s}.entering .bench .wires i:nth-child(6){animation-delay:.4s}}
+@keyframes wire{from{transform:scaleX(0);transform-origin:left}to{transform:none}}
+.meter{position:absolute;right:80px;top:64px;width:330px;background:#2A2C2F;padding:22px}
+.meter .lcd{background:var(--lcd);color:var(--lcd-ink);font:600 66px/1 var(--mono);text-align:right;padding:18px 18px 14px;letter-spacing:-.02em}
+.meter .lcd small{display:block;font-size:18px;text-align:left;letter-spacing:0;opacity:.8}
+.meter .knob{width:120px;height:120px;border-radius:50%;background:#111;margin:22px auto 0;position:relative;border:8px solid #3B3E42}
+.meter .knob::after{content:"";position:absolute;left:50%;top:8px;width:10px;height:44px;margin-left:-5px;background:var(--y)}
+.meter .jacks{display:flex;justify-content:space-around;margin-top:20px}
+.meter .jacks span{width:34px;height:34px;border-radius:50%;background:#111;border:6px solid #444}
+.meter .jacks span.r{border-color:var(--r)}
+
+/* bloques */
+.ficha{background:#fff;padding:22px 26px}
+.ficha .k{font:600 17px var(--mono);color:#8A6A00}
+.ficha h3{margin-top:4px}
+.ficha p{font-size:21px;line-height:1.4;margin-top:8px;color:var(--soft)}
+.grid4{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+figure.foto{margin:0;background:#fff;padding:12px;display:flex;flex-direction:column}
+figure.foto .ph{flex:1;min-height:0;position:relative;background:var(--tone);overflow:hidden}
+figure.foto img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+figure.foto.contain img{object-fit:contain;background:#fff}
+figure.foto figcaption{font-size:15px;line-height:1.3;margin-top:8px;color:var(--soft)}
+figure.foto .ph .alt{position:absolute;inset:0;display:none;align-items:center;justify-content:center;text-align:center;padding:16px;font-size:20px;font-weight:600;color:var(--soft)}
+figure.foto.nofoto .ph .alt{display:flex}
+.msg{background:#fff;padding:14px 18px;font-size:21px;min-height:56px;margin-top:16px}
+.lcdbox{background:var(--lcd);color:var(--lcd-ink);padding:16px 20px}
+.lcdbox .v{font:600 58px/1 var(--mono);letter-spacing:-.02em}
+.lcdbox .l{font-size:18px;margin-top:6px}
+.warn{background:var(--y);color:#111;padding:14px 18px;font-size:21px;font-weight:600}
+.seg{display:flex;gap:8px;flex-wrap:wrap}
+.seg button{font-size:19px}
+button.go{background:#151719;color:var(--y)}
+button.go:hover{background:#000}
+button[aria-pressed=true]{background:#151719;color:var(--y)}
+
+/* ley de Ohm */
+.ohm{display:grid;grid-template-columns:330px 1fr;gap:32px;margin-top:20px}
+.tri{position:relative;width:330px;height:290px}
+.tri svg{width:100%;height:100%}
+.tri button{position:absolute;width:96px;height:80px;font:800 54px var(--sans);background:transparent;color:#fff;padding:0}
+.tri button[aria-pressed=true]{color:var(--y);background:transparent}
+.tri button:hover{background:rgba(255,255,255,.08)}
+.ohm .inp label{display:block;font-size:21px;font-weight:600;margin-bottom:6px}
+.ohm .inp input{font:600 32px var(--mono);width:200px;padding:10px 14px;border:0;background:#fff}
+.ohm .inp .u{font:600 28px var(--mono);margin-left:8px}
+
+/* multímetro */
+.mm{display:grid;grid-template-columns:330px 1fr;gap:28px;margin-top:18px}
+.mmdev{background:#2A2C2F;padding:20px}
+.mmdev .lcd{background:var(--lcd);color:var(--lcd-ink);font:600 54px/1 var(--mono);text-align:right;padding:16px 16px 12px;min-height:96px}
+.mmdev .lcd small{display:block;font-size:16px;text-align:left;opacity:.8}
+.dial{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:16px}
+.dial button{background:#111;color:#E6E6E6;font:600 18px var(--mono);padding:12px 8px}
+.dial button[aria-pressed=true]{background:var(--y);color:#111}
+.cases{display:flex;flex-direction:column;gap:10px}
+.cases button{text-align:left;font-size:20px;padding:14px 16px;background:#fff}
+.cases button[aria-pressed=true]{background:#151719;color:var(--y)}
+
+/* AC → DC */
+.flow{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-top:18px}
+.flow .st{background:#fff;padding:14px 16px;min-height:120px;opacity:.45;transition:opacity .3s,background .3s}
+.flow .st.on{opacity:1}
+.flow .st.cur{background:var(--y)}
+.flow .st b{display:block;font-size:22px}
+.flow .st span{font-size:17px;color:var(--soft)}
+.scope{background:#0E1A12;margin-top:16px;height:210px;position:relative}
+.scope svg{width:100%;height:100%;display:block}
+.scope .grid line{stroke:#1F3A27;stroke-width:1}
+.scope path.sig{fill:none;stroke:#7DF59A;stroke-width:4;transition:d .6s}
+.scope .lab{position:absolute;left:16px;top:10px;font:600 17px var(--mono);color:#7DF59A}
+
+/* selector de voltaje */
+.vsel{display:grid;grid-template-columns:1fr 1fr;gap:28px;margin-top:20px}
+.switch{display:flex;background:#2A2C2F;padding:10px;gap:10px;width:max-content}
+.switch button{font:700 28px var(--mono);background:#111;color:#999;padding:14px 22px}
+.switch button[aria-pressed=true]{background:var(--r);color:#fff}
+
+/* conector ATX 24 */
+.pinout{display:grid;grid-template-columns:600px 1fr;gap:28px;margin-top:18px}
+.conn{background:#F4F1E6;padding:18px;display:grid;grid-template-columns:repeat(12,1fr);gap:6px;border:4px solid #DDD6BE}
+.conn button{aspect-ratio:1;padding:0;border-radius:4px;border:3px solid #DDD6BE;font:700 15px var(--mono);color:#fff;display:flex;align-items:flex-end;justify-content:center;padding-bottom:3px}
+.conn button[aria-pressed=true]{outline:4px solid #111;outline-offset:1px}
+.conn .lbl{grid-column:1/-1;font:600 14px var(--mono);color:var(--soft);display:flex;justify-content:space-between}
+
+/* tolerancia */
+.tol{display:grid;grid-template-columns:1fr 1fr;gap:28px;margin-top:18px}
+.bar{position:relative;height:58px;background:#fff;margin-top:14px}
+.bar .ok{position:absolute;top:0;bottom:0;background:rgba(30,158,79,.25)}
+.bar .needle{position:absolute;top:-8px;bottom:-8px;width:6px;background:#111;transition:left .4s var(--ease-expo)}
+.bar .t{position:absolute;bottom:-28px;font:600 15px var(--mono);color:var(--soft);transform:translateX(-50%)}
+input[type=range]{width:100%;height:36px;accent-color:#151719}
+
+/* calculadora de vatios */
+.wcalc{display:grid;grid-template-columns:1fr 380px;gap:24px;margin-top:16px}
+.wcalc .rowp{display:grid;grid-template-columns:190px 1fr;gap:10px;align-items:center;margin-bottom:10px}
+.wcalc .rowp b{font-size:20px}
+.wcalc .rowp .seg button{font-size:17px;padding:10px 12px}
+.eff{display:grid;grid-template-columns:1fr 1fr;gap:28px;margin-top:18px}
+
+/* clasificador / chips */
+.chips{display:flex;flex-wrap:wrap;gap:12px}
+.chip{font:600 21px var(--sans);padding:12px 18px;background:#fff;color:var(--ink)}
+.chip.sel{background:var(--ink);color:var(--ground)}
+.chip.ok{background:#1E9E4F;color:#fff}
+.chip.bad{background:#C0392B;color:#fff}
+
+/* diagnóstico */
+.dx{display:grid;grid-template-columns:420px 1fr;gap:24px;margin-top:18px}
+.dx .list{display:flex;flex-direction:column;gap:10px}
+.dx .list button{text-align:left;font-size:20px;padding:14px 16px;background:#fff}
+.dx .ans{background:#fff;padding:24px 28px;min-height:360px}
+.dx .ans .k{font:600 17px var(--mono);color:#8A6A00}
+.dx .ans p{font-size:23px;margin-top:6px}
+
+/* seguro o peligroso, quiz */
+.quiz{margin-top:16px}
+.quiz .qz-q,.quiz .q{font-size:30px;font-weight:700;line-height:1.2;min-height:76px}
+.quiz .ops{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+.quiz .ops button{text-align:left;font-size:22px;padding:16px 18px;background:#fff;color:var(--ink)}
+.quiz .ops button.ok{background:#1E9E4F;color:#fff}
+.quiz .ops button.bad{background:#C0392B;color:#fff}
+.quiz .why{font-size:21px;margin-top:14px;min-height:62px;background:var(--tone);padding:12px 16px}
+.quiz .foot{display:flex;justify-content:space-between;align-items:center;margin-top:14px;font-size:21px;font-weight:600}
+.dots{display:flex;gap:6px}.dots i{width:22px;height:10px;background:var(--tone2)}.dots i.ok{background:#1E9E4F}.dots i.bad{background:#C0392B}.dots i.cur{background:var(--ink)}
+
+.discrow{position:absolute;left:72px;right:72px;bottom:40px}
+.field-hi .q{font-size:54px;line-height:1.05;letter-spacing:-.03em;font-weight:800;max-width:1100px}
+.cred-list{columns:2;column-gap:40px;font-size:15px;line-height:1.45;margin-top:14px;padding-left:22px}
+.cred-list a{color:var(--ink)}
+</style>
+</head>
+<body>
+<div id="viewport"><div id="stage" data-name="TESI 2108 · Unidad C">
+
+<!-- 1 portada -->
+<section class="slide chapter" data-title="Portada">
+  <div class="bench">
+    <div class="tag" data-a><i></i>Banco de pruebas · TESI 2108</div>
+    <h1 class="mask" style="margin-top:22px;font-size:80px;line-height:1;max-width:760px"><span>Unidad C: Fuentes de alimentación y electricidad</span></h1>
+    <p class="what" data-a>Semana 4 · lunes 14 de septiembre de 2026<br>Prof. Eduardo O. De Jesús Arroyo · Instituto Tecnológico de Puerto Rico</p>
+    <div class="wires" data-a><i style="background:var(--y)"></i><i style="background:var(--r)"></i><i style="background:var(--o)"></i><i style="background:#000;outline:2px solid #444"></i><i style="background:var(--g)"></i><i style="background:var(--pu)"></i></div>
+  </div>
+  <div class="meter" data-a><div class="lcd"><small>V DC</small><span class="count" data-to="12.00">0.00</span></div><div class="knob"></div><div class="jacks"><span></span><span></span><span class="r"></span></div></div>
+</section>
+
+<section class="slide" data-title="Al terminar la clase">
+  <h2 class="mask"><span>Al terminar la clase podrás…</span></h2>
+  <div class="grid4 gap">
+    <div class="ficha" data-a><div class="k">V = I × R</div><h3>Aplicar la ley de Ohm</h3><p>Y la fórmula de potencia a casos del taller.</p></div>
+    <div class="ficha" data-a><div class="k">ATX_24P · EPS · PCIe</div><h3>Identificar los conectores</h3><p>Y el voltaje de cada color de cable.</p></div>
+    <div class="ficha" data-a><div class="k">W · 80 PLUS</div><h3>Seleccionar una fuente</h3><p>Por formato, potencia y eficiencia.</p></div>
+    <div class="ficha" data-a><div class="k">±5 %</div><h3>Probarla con seguridad</h3><p>Con el probador y el multímetro.</p></div>
+  </div>
+</section>
+
+<!-- CAP 1 -->
+<section class="slide chapter" data-title="01 · Principios de electricidad">
+  <div class="bench">
+    <div class="tag" data-a><i></i>Prueba 01</div>
+    <h2 class="ch-title mask"><span>Principios de electricidad</span></h2>
+    <p class="what" data-a>Voltaje, corriente, resistencia y potencia, y cómo se miden.</p>
+    <div class="wires" data-a><i style="background:var(--y)"></i><i style="background:#333"></i><i style="background:#333"></i><i style="background:#333"></i><i style="background:#333"></i><i style="background:#333"></i></div>
+  </div>
+  <div class="meter" data-a><div class="lcd"><small>V · I · R · P</small>01</div><div class="knob"></div><div class="jacks"><span></span><span></span><span class="r"></span></div></div>
+</section>
+
+<section class="slide" data-title="Ley de Ohm">
+  <h2 class="mask"><span>La ley de Ohm: toca lo que quieres calcular</span></h2>
+  <div class="ohm">
+    <div data-a>
+      <div class="tri" id="tri">
+        <svg viewBox="0 0 330 290" aria-hidden="true"><polygon points="165,6 324,284 6,284" fill="#151719"/><line x1="75" y1="165" x2="255" y2="165" stroke="#fff" stroke-width="4"/><line x1="165" y1="165" x2="165" y2="284" stroke="#fff" stroke-width="4"/></svg>
+        <button data-o="V" style="left:117px;top:72px" aria-label="Calcular voltaje">V</button>
+        <button data-o="I" style="left:62px;top:185px" aria-label="Calcular corriente">I</button>
+        <button data-o="R" style="left:172px;top:185px" aria-label="Calcular resistencia">R</button>
+      </div>
+      <p class="small" style="margin-top:10px">Tapa la letra que buscas: lo que queda es la fórmula.</p>
+    </div>
+    <div data-a>
+      <div class="lcdbox"><div class="l" id="o-f">V = I × R</div><div class="v" id="o-r">12.00 V</div></div>
+      <div class="row inp" style="margin-top:18px;gap:28px" id="o-in"></div>
+      <div class="lcdbox" style="margin-top:18px;background:#fff"><div class="l">Potencia: P = V × I</div><div class="v" id="o-p" style="font-size:44px">36.0 W</div></div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-title="Multímetro simulado">
+  <h2 class="mask"><span>Practica con el multímetro</span></h2>
+  <div class="mm">
+    <div class="mmdev" data-a>
+      <div class="lcd" id="mm-lcd"><small id="mm-mode">OFF</small><span id="mm-v">----</span></div>
+      <div class="dial" id="dial"><button data-m="vdc">V ⎓</button><button data-m="vac">V ~</button><button data-m="ohm">Ω</button><button data-m="cont">Continuidad</button></div>
+    </div>
+    <div data-a>
+      <h3>¿Qué estás midiendo?</h3>
+      <div class="cases" id="cases" style="margin-top:10px">
+        <button data-c="y">Cable amarillo de la fuente encendida</button>
+        <button data-c="wall">Tomacorriente de pared</button>
+        <button data-c="fuse">Fusible bueno, sin energía</button>
+        <button data-c="broken">Cable roto, sin energía</button>
+      </div>
+      <div class="msg" id="mm-msg">Escoge la escala del multímetro y lo que vas a medir.</div>
+    </div>
+  </div>
+</section>
+
+<!-- CAP 2 -->
+<section class="slide chapter" data-title="02 · La fuente de alimentación">
+  <div class="bench">
+    <div class="tag" data-a><i></i>Prueba 02</div>
+    <h2 class="ch-title mask"><span>La fuente de alimentación</span></h2>
+    <p class="what" data-a>De la corriente alterna de la pared a la corriente directa de los componentes.</p>
+    <div class="wires" data-a><i style="background:var(--y)"></i><i style="background:var(--r)"></i><i style="background:#333"></i><i style="background:#333"></i><i style="background:#333"></i><i style="background:#333"></i></div>
+  </div>
+  <figure class="meter foto" data-a style="padding:12px;height:330px"><div class="ph"><img data-cm="ATX_Computer_power_supply_unit.jpg" alt="Fuente de poder ATX con sus cables"><div class="alt">Fuente ATX</div></div></figure>
+</section>
+
+<section class="slide" data-title="De AC a DC">
+  <h2 class="mask"><span>Dentro de la fuente: de AC a DC</span></h2>
+  <div class="flow" id="flow" data-a>
+    <div class="st"><b>Entrada AC</b><span>~120 V, 60 Hz</span></div>
+    <div class="st"><b>Rectificador</b><span>Invierte la parte negativa</span></div>
+    <div class="st"><b>Filtro</b><span>Capacitores suavizan</span></div>
+    <div class="st"><b>Regulador</b><span>Voltajes estables</span></div>
+    <div class="st"><b>Salida DC</b><span>12, 5 y 3.3 V</span></div>
+  </div>
+  <div class="cols" style="grid-template-columns:1fr 330px;gap:20px">
+    <div class="scope" data-a><div class="lab" id="sc-l">Osciloscopio · entrada</div><svg viewBox="0 0 800 210" preserveAspectRatio="none"><g class="grid"><line x1="0" y1="105" x2="800" y2="105"/><line x1="0" y1="35" x2="800" y2="35"/><line x1="0" y1="175" x2="800" y2="175"/><line x1="200" y1="0" x2="200" y2="210"/><line x1="400" y1="0" x2="400" y2="210"/><line x1="600" y1="0" x2="600" y2="210"/></g><path class="sig" id="sc"/></svg></div>
+    <div data-a style="margin-top:16px"><div class="row"><button class="go" id="fl-go">Siguiente etapa</button><button id="fl-rs">Reiniciar</button></div><p class="small" id="fl-msg" style="margin-top:12px">La fuente también entrega 5 V de espera (5VSB) aunque el equipo esté apagado.</p></div>
+  </div>
+</section>
+
+<section class="slide" data-title="Por dentro: peligro">
+  <h2 class="mask"><span>Por dentro: por qué nunca se abre</span></h2>
+  <div class="cols" style="grid-template-columns:520px 1fr;gap:28px;margin-top:20px">
+    <figure class="foto" data-a style="height:460px"><div class="ph"><img data-cm="ATX_power_supply_interior.jpg" alt="Interior de una fuente ATX con capacitores, transformador y disipadores"><div class="alt">Interior de una fuente ATX</div></div><figcaption>Interior de una fuente ATX (foto con fines educativos).</figcaption></figure>
+    <div data-a>
+      <div class="warn">Los capacitores grandes de la entrada retienen carga peligrosa aun con la fuente desconectada.</div>
+      <div class="grid4" style="grid-template-columns:1fr;gap:12px;margin-top:16px">
+        <div class="ficha"><h3>Se reemplaza completa</h3><p>En el taller la fuente no se repara: se prueba y, si falla, se cambia.</p></div>
+        <div class="ficha"><h3>Sin pulsera ESD</h3><p>Con alto voltaje, la pulsera crea un camino a tierra a través del cuerpo.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-title="ATX, SFX y modular">
+  <h2 class="mask"><span>Tipos de fuente</span></h2>
+  <div class="grid3 gap" style="margin-top:22px">
+    <figure class="foto" data-a style="height:260px"><div class="ph"><img data-cm="ATX_Computer_power_supply_unit.jpg" alt="Fuente ATX"><div class="alt">ATX</div></div><figcaption><b>ATX:</b> 150 × 86 mm de frente. Escritorio y torres.</figcaption></figure>
+    <figure class="foto" data-a style="height:260px"><div class="ph"><img data-cm="SFX_PC-PSU_Delta_IMG_9760.JPG" alt="Fuente SFX compacta"><div class="alt">SFX</div></div><figcaption><b>SFX:</b> 125 × 63.5 mm. Cajas compactas (Mini-ITX).</figcaption></figure>
+    <figure class="foto" data-a style="height:260px"><div class="ph"><img data-cm="Modular_vs_non-modular_PSU.JPG" alt="Fuente modular y fuente no modular con sus cables"><div class="alt">Modular</div></div><figcaption><b>Modular:</b> solo conectas los cables que usas.</figcaption></figure>
+  </div>
+  <div class="msg" data-a>Al reemplazar una fuente en un equipo de marca (formatos TFX o Flex ATX), la nueva debe tener <b>el mismo formato y los mismos conectores</b>.</div>
+</section>
+
+<section class="slide" data-title="Selector 115/230 V">
+  <h2 class="mask"><span>Simulador: el selector de voltaje</span></h2>
+  <div class="vsel">
+    <div data-a>
+      <h3>Selector de la fuente</h3>
+      <div class="switch" id="sw" style="margin-top:10px"><button data-sw="115">115 V</button><button data-sw="230">230 V</button></div>
+      <h3 style="margin-top:22px">Tomacorriente</h3>
+      <div class="seg" id="out" style="margin-top:10px"><button data-out="120">Puerto Rico · 120 V</button><button data-out="230">Europa · 230 V</button></div>
+      <div class="row" style="margin-top:22px"><button class="go" id="vs-go">Conectar y encender</button></div>
+    </div>
+    <div data-a>
+      <figure class="foto" style="height:230px"><div class="ph"><img data-cm="Delon_Switch_IMG_0818.JPG" alt="Selector rojo de voltaje en una fuente antigua"><div class="alt">Selector de voltaje</div></div><figcaption>Selector manual rojo en una fuente antigua.</figcaption></figure>
+      <div class="msg" id="vs-msg" style="min-height:96px">Las fuentes actuales con PFC activo aceptan de 100 a 240 V solas, sin selector.</div>
+    </div>
+  </div>
+</section>
+
+<!-- CAP 3 -->
+<section class="slide chapter" data-title="03 · Conectores y voltajes">
+  <div class="bench">
+    <div class="tag" data-a><i></i>Prueba 03</div>
+    <h2 class="ch-title mask"><span>Conectores y voltajes</span></h2>
+    <p class="what" data-a>Cada conector, cada color de cable y la tolerancia del estándar ATX.</p>
+    <div class="wires" data-a><i style="background:var(--y)"></i><i style="background:var(--r)"></i><i style="background:var(--o)"></i><i style="background:#333"></i><i style="background:#333"></i><i style="background:#333"></i></div>
+  </div>
+  <figure class="meter foto" data-a style="padding:12px;height:330px"><div class="ph"><img data-cm="ATX_Power_connectors.jpg" alt="Conectores ATX de 24 y 4 pines"><div class="alt">Conectores ATX</div></div></figure>
+</section>
+
+<section class="slide" data-title="Los conectores">
+  <h2 class="mask"><span>Los conectores de la fuente</span></h2>
+  <div data-tabs="atx" data-a style="margin-top:18px">
+    <div class="seg"><button data-tab="atx">ATX 24</button><button data-tab="eps">EPS CPU</button><button data-tab="pcie">PCIe</button><button data-tab="sata">SATA y Molex</button><button data-tab="hp">12V-2x6</button></div>
+    <div data-panel="atx" class="cols" style="grid-template-columns:400px 1fr;gap:24px;margin-top:16px"><figure class="foto" style="height:330px"><div class="ph"><img data-cm="ATX_Power_connectors.jpg" alt="Conector ATX de 24 pines"><div class="alt">ATX 24</div></div></figure><div class="ficha"><div class="k">24 PINES (20 + 4)</div><h3 style="font-size:36px">Tarjeta madre</h3><p style="font-size:24px">3.3, 5, 12 y –12 V, más 5VSB, PS_ON y PWR_OK. Las 4 de más se separan para tarjetas antiguas de 20 pines.</p></div></div>
+    <div data-panel="eps" class="cols" style="grid-template-columns:400px 1fr;gap:24px;margin-top:16px"><figure class="foto contain" style="height:330px"><div class="ph"><img data-cm="ATX12V_EPS12V_(8-pin).jpg" alt="Conector EPS de 8 pines"><div class="alt">EPS</div></div></figure><div class="ficha"><div class="k">4 U 8 PINES (4 + 4)</div><h3 style="font-size:36px">Procesador</h3><p style="font-size:24px">12 V para la CPU, junto al socket. Se parece al PCIe de 8, pero la llave es distinta: no lo fuerces.</p></div></div>
+    <div data-panel="pcie" class="cols" style="grid-template-columns:400px 1fr;gap:24px;margin-top:16px"><figure class="foto contain" style="height:330px"><div class="ph"><img data-cm="PCI_Express_Power_Supply_Connector-female_PNr°0438.jpg" alt="Conectores de energía PCIe de 6 y 8 pines"><div class="alt">PCIe</div></div></figure><div class="ficha"><div class="k">6 U 8 PINES (6 + 2)</div><h3 style="font-size:36px">Tarjeta de video</h3><p style="font-size:24px">12 V: 75 W con 6 pines y 150 W con 8 pines, además de los 75 W que da la ranura.</p></div></div>
+    <div data-panel="sata" class="cols" style="grid-template-columns:400px 1fr;gap:24px;margin-top:16px"><figure class="foto contain" style="height:330px"><div class="ph"><img data-cm="Molex-to-SATA-power_009.jpg" alt="Adaptador de Molex a energía SATA"><div class="alt">SATA y Molex</div></div></figure><div class="ficha"><div class="k">SATA 15 · MOLEX 4</div><h3 style="font-size:36px">Discos y accesorios</h3><p style="font-size:24px">SATA: 3.3, 5 y 12 V para discos y unidades ópticas. Molex: 5 y 12 V para ventiladores y equipos antiguos.</p></div></div>
+    <div data-panel="hp" class="cols" style="grid-template-columns:400px 1fr;gap:24px;margin-top:16px"><div class="ficha" style="background:var(--y)"><div class="k" style="color:#111">12 + 4 SEÑALES</div><h3 style="font-size:36px">Hasta 600 W</h3></div><div class="ficha"><div class="k">12V-2x6 (ANTES 12VHPWR)</div><h3 style="font-size:36px">Tarjetas de video recientes</h3><p style="font-size:24px">Debe entrar completo hasta el seguro. Si queda flojo, puede calentarse y derretirse.</p></div></div>
+  </div>
+</section>
+
+<section class="slide" data-title="Conector de 24 pines">
+  <h2 class="mask"><span>El conector de 24 pines: toca un pin</span></h2>
+  <div class="pinout">
+    <div data-a>
+      <div class="conn" id="conn"></div>
+      <p class="small" style="margin-top:10px">Vista de frente del conector del cable, con el seguro arriba.</p>
+    </div>
+    <div data-a>
+      <div class="lcdbox"><div class="l" id="pin-n">Pin —</div><div class="v" id="pin-v">—</div></div>
+      <div class="ficha" style="margin-top:14px;min-height:200px"><h3 id="pin-h">Código de colores ATX</h3><p id="pin-p">Amarillo 12 V · rojo 5 V · naranja 3.3 V · negro tierra · verde PS_ON · morado 5 V de espera · gris PWR_OK · azul –12 V.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-title="Tolerancia ±5 %">
+  <h2 class="mask"><span>¿Está dentro de tolerancia?</span></h2>
+  <div class="tol">
+    <div data-a>
+      <h3>Riel</h3><div class="seg" id="rail" style="margin-top:8px"><button data-r="12">12 V</button><button data-r="5">5 V</button><button data-r="3.3">3.3 V</button></div>
+      <h3 style="margin-top:20px">Lectura del multímetro</h3>
+      <input type="range" id="rd" min="0" max="100" value="50" aria-label="Lectura medida">
+      <div class="bar" id="tbar"><div class="ok" id="tok"></div><div class="needle" id="tn"></div><span class="t" id="tlo"></span><span class="t" id="thi"></span></div>
+    </div>
+    <div data-a>
+      <div class="lcdbox"><div class="l" id="t-l">Lectura</div><div class="v" id="t-v">12.00 V</div></div>
+      <div class="msg" id="t-msg" style="min-height:110px"></div>
+      <p class="small">El estándar ATX permite ±5 % en los rieles positivos.</p>
+    </div>
+  </div>
+</section>
+
+<!-- CAP 4 -->
+<section class="slide chapter" data-title="04 · Especificaciones y selección">
+  <div class="bench">
+    <div class="tag" data-a><i></i>Prueba 04</div>
+    <h2 class="ch-title mask"><span>Especificaciones y selección</span></h2>
+    <p class="what" data-a>Cuántos vatios hacen falta y qué significa la certificación 80 PLUS.</p>
+    <div class="wires" data-a><i style="background:var(--y)"></i><i style="background:var(--r)"></i><i style="background:var(--o)"></i><i style="background:#000;outline:2px solid #444"></i><i style="background:#333"></i><i style="background:#333"></i></div>
+  </div>
+  <figure class="meter foto" data-a style="padding:12px;height:330px"><div class="ph"><img data-cm="ATX_PS_label.jpg" alt="Etiqueta de especificaciones de una fuente ATX de 400 W"><div class="alt">Etiqueta de la fuente</div></div></figure>
+</section>
+
+<section class="slide" data-title="Calculadora de vatios">
+  <h2 class="mask"><span>Calcula la fuente para un equipo</span></h2>
+  <div class="wcalc">
+    <div data-a id="wc"></div>
+    <div data-a>
+      <div class="lcdbox"><div class="l">Consumo estimado</div><div class="v" id="w-t">440 W</div></div>
+      <div class="lcdbox" style="margin-top:12px;background:#151719;color:var(--y)"><div class="l" style="color:#fff">Con margen de 30 %</div><div class="v" id="w-m">572 W</div></div>
+      <div class="msg" id="w-r">Recomendación: fuente de calidad de 600 a 650 W.</div>
+    </div>
+  </div>
+  <p class="small">Valores aproximados para practicar. Usa siempre los datos del fabricante de cada componente.</p>
+</section>
+
+<section class="slide" data-title="Eficiencia 80 PLUS">
+  <h2 class="mask"><span>Eficiencia: lo que no llega se vuelve calor</span></h2>
+  <div class="eff">
+    <div data-a>
+      <h3>Certificación</h3>
+      <div class="seg" id="ef" style="margin-top:8px"><button data-e="80">80 PLUS</button><button data-e="85">Bronze</button><button data-e="88">Silver</button><button data-e="90">Gold</button><button data-e="92">Platinum</button><button data-e="94">Titanium</button></div>
+      <h3 style="margin-top:20px">Potencia que usan los componentes: <span id="e-wv">500 W</span></h3>
+      <input type="range" id="e-w" min="200" max="900" step="50" value="500" aria-label="Potencia de salida">
+      <p class="small">Eficiencia aproximada al 50 % de carga en 115 V.</p>
+    </div>
+    <div data-a>
+      <div class="lcdbox"><div class="l">Toma de la pared</div><div class="v" id="e-in">556 W</div></div>
+      <div class="lcdbox" style="margin-top:12px;background:var(--r);color:#fff"><div class="l">Se pierde como calor</div><div class="v" id="e-h">56 W</div></div>
+      <p class="body" style="margin-top:14px">La certificación mide eficiencia, no calidad de los componentes: compra marcas reconocidas.</p>
+    </div>
+  </div>
+</section>
+
+<!-- CAP 5 -->
+<section class="slide chapter" data-title="05 · Fallas, prueba y seguridad">
+  <div class="bench">
+    <div class="tag" data-a><i></i>Prueba 05</div>
+    <h2 class="ch-title mask"><span>Fallas, prueba y seguridad</span></h2>
+    <p class="what" data-a>Síntomas, el probador de fuentes, el multímetro y las normas de seguridad eléctrica.</p>
+    <div class="wires" data-a><i style="background:var(--y)"></i><i style="background:var(--r)"></i><i style="background:var(--o)"></i><i style="background:#000;outline:2px solid #444"></i><i style="background:var(--g)"></i><i style="background:var(--pu)"></i></div>
+  </div>
+  <figure class="meter foto" data-a style="padding:12px;height:330px"><div class="ph"><img data-cm="Power_supply_tester_with_LCD_display_readout.jpg" alt="Probador de fuentes con pantalla LCD"><div class="alt">Probador de fuentes</div></div></figure>
+</section>
+
+<section class="slide" data-title="Diagnostica el síntoma">
+  <h2 class="mask"><span>Síntomas de una fuente defectuosa</span></h2>
+  <div class="dx">
+    <div class="list" id="dx" data-a></div>
+    <div class="ans" data-a><div class="k" id="dx-k">SÍNTOMA</div><h3 id="dx-h" style="font-size:30px">Escoge un síntoma</h3><p id="dx-c"></p><p id="dx-s" style="color:var(--soft)"></p></div>
+  </div>
+</section>
+
+<section class="slide" data-title="Equipo de prueba">
+  <h2 class="mask"><span>Probador de fuentes y multímetro</span></h2>
+  <div class="cols" style="grid-template-columns:1fr 1fr;gap:28px;margin-top:20px">
+    <div data-a>
+      <figure class="foto" style="height:250px"><div class="ph"><img data-cm="Power_supply_tester_with_LCD_display_readout.jpg" alt="Probador de fuentes conectado"><div class="alt">Probador de fuentes</div></div></figure>
+      <div class="ficha" style="margin-top:12px"><h3>Probador</h3><p>Conecta todos los cables y muestra cada riel y PWR_OK. Rápido, pero sin carga real.</p></div>
+    </div>
+    <div data-a>
+      <figure class="foto contain" style="height:250px"><div class="ph"><img data-cm="Digitalmultimeter.jpg" alt="Multímetro digital"><div class="alt">Multímetro</div></div></figure>
+      <div class="ficha" style="margin-top:12px"><h3>Multímetro</h3><p>Mide con la fuente instalada y bajo carga: una prueba más real.</p></div>
+    </div>
+  </div>
+  <div class="warn" data-a style="margin-top:14px">La prueba del clip (verde con negro) solo enciende la fuente: no dice si los voltajes son correctos.</div>
+</section>
+
+<section class="slide" data-title="¿Seguro o peligroso?">
+  <h2 class="mask"><span>Normas de seguridad: ¿seguro o peligroso?</span></h2>
+  <div class="quiz" id="sf" data-a>
+    <div class="q" id="sf-q"></div>
+    <div class="ops"><button data-sf="1">Seguro</button><button data-sf="0">Peligroso</button></div>
+    <div class="why" id="sf-why"></div>
+    <div class="foot"><span id="sf-n"></span><button class="go" id="sf-next">Siguiente situación</button></div>
+  </div>
+  <div class="cols" style="grid-template-columns:240px 1fr;gap:20px;margin-top:14px" data-a>
+    <figure class="foto" style="height:150px"><div class="ph"><img data-cm="APC_Back-UPS_ES525.jpg" alt="Batería UPS APC Back-UPS"><div class="alt">UPS</div></div></figure>
+    <p class="body" style="align-self:center">En Puerto Rico, una UPS con regulador de voltaje (AVR) protege contra apagones cortos y variaciones de voltaje.</p>
+  </div>
+</section>
+
+<section class="slide field-hi" data-title="Actividad: prueba de fuentes">
+  <p class="small" style="color:var(--ink);font-size:24px;font-weight:700">Actividad en el laboratorio · en parejas</p>
+  <p class="q sub">Lee la etiqueta de la fuente, identifica cada conector, pruébala con el probador y decide: ¿está dentro de ±5&nbsp;%? ¿Sirve para el equipo asignado?</p>
+  <div class="discrow"><div class="timer" data-timer="1500"></div></div>
+</section>
+
+<section class="slide" data-title="Ejercicio corto">
+  <h2 class="mask"><span>Ejercicio corto: seis preguntas</span></h2>
+  <div class="quiz" id="qz" data-a>
+    <div class="qz-q"></div><div class="ops"></div><div class="why"></div>
+    <div class="foot"><div class="dots"></div><span class="qz-n"></span><button class="go qz-next">Siguiente</button></div>
+  </div>
+</section>
+
+<section class="slide" data-title="Créditos y referencias">
+  <h2 class="mask"><span>Créditos de las fotos y referencias</span></h2>
+  <p class="small sub">Fotos de Wikimedia Commons, guardadas con la presentación. Cada enlace lleva a la página del archivo.</p>
+  <ol class="cred-list" id="creds"></ol>
+  <p class="small" style="margin-top:12px">Referencias: Meyers, M. (2025). <i>CompTIA A+ certification all-in-one exam guide</i> (11th ed.). McGraw-Hill · Docter, Q., &amp; Buhagiar, J. (2022). <i>CompTIA A+ complete study guide</i> (5th ed.). Sybex · Mueller, S. (2022). <i>Upgrading and repairing PCs</i> (22nd ed.). Que · CLEAResult. (s.f.). 80 PLUS. · Intel. (s.f.). ATX power supply design guide. · ITPR. (2026). Prontuario TESI 2108 (rev. mayo 2026).</p>
+</section>
+
+<section class="slide chapter" data-title="Cierre">
+  <div class="bench">
+    <div class="tag" data-a><i></i>PWR_OK</div>
+    <h2 class="ch-title mask"><span>Próxima: los procesadores</span></h2>
+    <p class="what" data-a>Próxima clase: lunes 21 de septiembre, Unidad D. Trae tus mediciones de la fuente para comentarlas.</p>
+    <div class="wires" data-a><i style="background:var(--y)"></i><i style="background:var(--r)"></i><i style="background:var(--o)"></i><i style="background:#000;outline:2px solid #444"></i><i style="background:var(--g)"></i><i style="background:var(--pu)"></i></div>
+  </div>
+  <div class="meter" data-a><div class="lcd"><small>PWR_OK</small>12.00</div><div class="knob"></div><div class="jacks"><span></span><span></span><span class="r"></span></div></div>
+</section>
+
+</div></div>
+<script src="assets/deck.js"></script>
+<script src="assets/kit.js"></script>
+<script>
+(function(){
+'use strict';
+var $=function(i){return document.getElementById(i)};
+var CRED={"ATX_PS_label.jpg": {"f": "ATX_PS_label", "a": "Baran Ivo", "l": "Public domain"}, "Antistatic_wrist_strap.jpg": {"f": "Antistatic_wrist_strap", "a": "Kms", "l": "CC BY 3.0"}, "ATX_power_supply_interior.jpg": {"f": "ATX_power_supply_interior", "a": "Alan Liefting", "l": "Public domain"}, "Molex-to-SATA-power_009.jpg": {"f": "Molex_to_SATA_power_009", "a": "Martixer", "l": "Public domain"}, "Modular_vs_non-modular_PSU.JPG": {"f": "Modular_vs_non_modular_PSU", "a": "Ni-sama", "l": "CC BY-SA 3.0"}, "Digitalmultimeter.jpg": {"f": "Digitalmultimeter", "a": "Michael Häckel", "l": "Public domain"}, "Delon_Switch_IMG_0818.JPG": {"f": "Delon_Switch_IMG_0818", "a": "Hans Haase", "l": "CC BY-SA 3.0"}, "Power_supply_tester_with_LCD_display_readout.jpg": {"f": "Power_supply_tester_with_LCD_display_readout", "a": "Dsimic", "l": "CC BY-SA 3.0"}, "SFX_PC-PSU_Delta_IMG_9760.JPG": {"f": "SFX_PC_PSU_Delta_IMG_9760", "a": "Hans Haase", "l": "CC BY-SA 3.0"}, "PCI_Express_Power_Supply_Connector-female_PNr°0438.jpg": {"f": "PCI_Express_Power_Supply_Connector_female_PNr_0438", "a": "D-Kuru", "l": "CC BY-SA 3.0 at"}, "ATX12V_EPS12V_(8-pin).jpg": {"f": "ATX12V_EPS12V_8_pin", "a": "Chrispos3", "l": "CC BY-SA 4.0"}, "ATX_Power_connectors.jpg": {"f": "ATX_Power_connectors", "a": "Dmitry Makeev", "l": "CC BY-SA 4.0"}, "ATX_Computer_power_supply_unit.jpg": {"f": "ATX_Computer_power_supply_unit", "a": "Dmitry Makeev", "l": "CC BY-SA 4.0"}, "APC_Back-UPS_ES525.jpg": {"f": "APC_Back_UPS_ES525", "a": "MSDN.WhiteKnight", "l": "CC0"}};
+Kit.photos('C',CRED);
+Kit.credits($('creds'),CRED);
+function fx(n,d){return (+n).toFixed(d)}
+function press(cont,attr,val){[].forEach.call(cont.querySelectorAll('['+attr+']'),function(b){b.setAttribute('aria-pressed',String(b.getAttribute(attr))===String(val))})}
+
+/* ---------- portada: el multímetro cuenta ---------- */
+document.addEventListener('deck:slide',function(e){var c=e.detail.slide.querySelector('.count');if(!c)return;var to=+c.dataset.to,t0=null;
+  if(matchMedia('(prefers-reduced-motion: reduce)').matches){c.textContent=fx(to,2);return}
+  function f(t){if(!t0)t0=t;var k=Math.min(1,(t-t0)/1200);c.textContent=fx(to*(1-Math.pow(1-k,3)),2);if(k<1)requestAnimationFrame(f)}requestAnimationFrame(f)});
+
+/* ---------- Ohm ---------- */
+var om='V',ov={V:12,I:3,R:4};
+var OF={V:['V = I × R',['I','A'],['R','Ω']],I:['I = V ÷ R',['V','V'],['R','Ω']],R:['R = V ÷ I',['V','V'],['I','A']]};
+var UN={V:'V',I:'A',R:'Ω'};
+function ohm(){var f=OF[om];press($('tri'),'data-o',om);$('o-f').textContent=f[0];
+  $('o-in').innerHTML=[f[1],f[2]].map(function(x){return '<div><label for="oi-'+x[0]+'">'+({V:'Voltaje',I:'Corriente',R:'Resistencia'}[x[0]])+'</label><input id="oi-'+x[0]+'" type="number" min="0.01" step="any" value="'+ov[x[0]]+'"><span class="u">'+x[1]+'</span></div>'}).join('');
+  [f[1],f[2]].forEach(function(x){$('oi-'+x[0]).oninput=function(){var v=parseFloat(this.value);if(v>0){ov[x[0]]=v;calc()}}});calc()}
+function calc(){if(om==='V')ov.V=ov.I*ov.R;if(om==='I')ov.I=ov.V/ov.R;if(om==='R')ov.R=ov.V/ov.I;
+  $('o-r').textContent=fx(ov[om],2)+' '+UN[om];$('o-p').textContent=fx(ov.V*ov.I,1)+' W'}
+[].forEach.call($('tri').querySelectorAll('[data-o]'),function(b){b.onclick=function(){om=b.dataset.o;ohm()}});ohm();
+
+/* ---------- multímetro ---------- */
+var mm=null,mc=null,MODE={vdc:'V DC',vac:'V AC',ohm:'Ω',cont:'CONTINUIDAD'};
+var READ={
+ y:{vdc:['12.08','¡Bien! El cable amarillo da +12 V. Punta negra a un cable negro (tierra).'],vac:['0.0','En V AC no ves nada: la salida de la fuente es directa. Usa V ⎓.'],ohm:['----','¡No! Nunca midas resistencia en un circuito con energía.'],cont:['----','¡No! La continuidad se prueba sin energía.']},
+ wall:{vdc:['0.0','En V DC no se ve: la pared es corriente alterna. Usa V ~.'],vac:['121.4','Correcto: unos 120 V de corriente alterna. Con cuidado: es peligroso.'],ohm:['----','¡Peligro! Nunca midas resistencia en el tomacorriente.'],cont:['----','¡Peligro! Nunca uses continuidad en el tomacorriente.']},
+ fuse:{vdc:['0.00','No hay energía: no hay voltaje que medir.'],vac:['0.0','No hay energía: no hay voltaje que medir.'],ohm:['0.2','Casi 0 Ω: el fusible conduce, está bueno.'],cont:['0.2 ♪','¡Pita! Hay continuidad: el fusible está bueno.']},
+ broken:{vdc:['0.00','Sin energía no hay voltaje.'],vac:['0.0','Sin energía no hay voltaje.'],ohm:['OL','OL (fuera de rango): resistencia infinita, el cable está abierto.'],cont:['OL','No pita: no hay continuidad, el cable está roto.']}};
+function mmDraw(){press($('dial'),'data-m',mm);press($('cases'),'data-c',mc);$('mm-mode').textContent=mm?MODE[mm]:'OFF';
+  if(!mm){$('mm-v').textContent='----';$('mm-msg').textContent='Escoge la escala del multímetro.';return}
+  if(!mc){$('mm-v').textContent='0.00';$('mm-msg').textContent='Ahora escoge qué vas a medir.';return}
+  var r=READ[mc][mm];$('mm-v').textContent=r[0];$('mm-msg').textContent=r[1]}
+[].forEach.call($('dial').children,function(b){b.onclick=function(){mm=b.dataset.m;mmDraw()}});
+[].forEach.call($('cases').children,function(b){b.onclick=function(){mc=b.dataset.c;mmDraw()}});mmDraw();
+
+/* ---------- AC → DC ---------- */
+function wave(kind){var p='',i,x,y;
+  for(i=0;i<=200;i++){x=i*4;var s=Math.sin(i/200*Math.PI*6);
+    if(kind===0)y=105-70*s;else if(kind===1)y=175-140*Math.abs(s);else if(kind===2)y=40+8*Math.abs(Math.sin(i/200*Math.PI*6+1.2));else y=45;
+    p+=(i?'L':'M')+x+' '+y.toFixed(1)}return p}
+var FL=[['Entrada AC · ~120 V, 60 Hz',0,'La corriente alterna de la pared cambia de dirección 60 veces por segundo.'],
+ ['Rectificador · onda solo positiva',1,'Los diodos del rectificador hacen que toda la onda quede positiva.'],
+ ['Filtro · capacitores',2,'Los capacitores guardan energía y llenan los huecos. Por eso retienen carga peligrosa.'],
+ ['Regulador · voltaje estable',3,'El regulador mantiene 12, 5 y 3.3 V estables aunque cambie el consumo.'],
+ ['Salida DC · 12, 5 y 3.3 V',3,'Corriente directa para los componentes. Además, 5VSB para encender con el botón.']];
+var fi=0;function flDraw(){[].forEach.call($('flow').children,function(s,j){s.classList.toggle('on',j<=fi);s.classList.toggle('cur',j===fi)});
+  $('sc').setAttribute('d',wave(FL[fi][1]));$('sc-l').textContent=FL[fi][0];$('fl-msg').textContent=FL[fi][2];$('fl-go').disabled=fi>=FL.length-1}
+$('fl-go').onclick=function(){fi++;flDraw()};$('fl-rs').onclick=function(){fi=0;flDraw()};flDraw();
+
+/* ---------- selector de voltaje ---------- */
+var sw=115,ou=120;
+function vsDraw(){press($('sw'),'data-sw',sw);press($('out'),'data-out',ou)}
+[].forEach.call($('sw').children,function(b){b.onclick=function(){sw=+b.dataset.sw;vsDraw()}});
+[].forEach.call($('out').children,function(b){b.onclick=function(){ou=+b.dataset.out;vsDraw()}});
+$('vs-go').onclick=function(){var m;
+  if(sw===115&&ou===120)m='Funciona: el selector coincide con los 120 V de Puerto Rico.';
+  else if(sw===230&&ou===230)m='Funciona: el selector coincide con los 230 V del tomacorriente.';
+  else if(sw===230&&ou===120)m='No enciende o funciona mal: la fuente recibe la mitad del voltaje que espera.';
+  else m='¡Se destruye la fuente! Recibe el doble del voltaje que espera. Revisa siempre el selector antes de conectar.';
+  $('vs-msg').textContent=m};vsDraw();
+
+/* ---------- conector de 24 pines ---------- */
+var C={y:'#FFC425',r:'#D7262B',o:'#F28C1E',k:'#111',g:'#1E9E4F',p:'#7B3FA0',gr:'#9AA0A6',b:'#1F6FC9',w:'#EDEDED'};
+var PIN={1:['o','+3.3 V'],2:['o','+3.3 V'],3:['k','Tierra'],4:['r','+5 V'],5:['k','Tierra'],6:['r','+5 V'],7:['k','Tierra'],8:['gr','PWR_OK'],9:['p','+5 V espera'],10:['y','+12 V'],11:['y','+12 V'],12:['o','+3.3 V'],
+ 13:['o','+3.3 V'],14:['b','–12 V'],15:['k','Tierra'],16:['g','PS_ON'],17:['k','Tierra'],18:['k','Tierra'],19:['k','Tierra'],20:['w','Sin uso'],21:['r','+5 V'],22:['r','+5 V'],23:['r','+5 V'],24:['k','Tierra']};
+var PD={'+3.3 V':'Naranja: 3.3 V para la memoria y chips de la tarjeta.','+5 V':'Rojo: 5 V para USB y circuitos lógicos.','+12 V':'Amarillo: 12 V, el riel principal para CPU, video y ventiladores.','Tierra':'Negro: tierra (0 V). La punta negra del multímetro va aquí.','PWR_OK':'Gris: la fuente avisa a la tarjeta madre que los voltajes ya están estables.','+5 V espera':'Morado: 5 V aunque el equipo esté apagado; permite encender con el botón o por la red.','PS_ON':'Verde: cuando la tarjeta lo une a tierra, la fuente enciende. La prueba del clip usa este pin.','–12 V':'Azul: –12 V, casi sin uso en equipos actuales.','Sin uso':'Antes era –5 V (blanco). Hoy está vacío.'};
+var CN={y:'Amarillo',r:'Rojo',o:'Naranja',k:'Negro',g:'Verde',p:'Morado',gr:'Gris',b:'Azul',w:'Blanco'};
+var h='<div class="lbl"><span>pin 13</span><span>pin 24</span></div>';
+for(var n=13;n<=24;n++)h+='<button data-pin="'+n+'" style="background:'+C[PIN[n][0]]+(PIN[n][0]==='w'?';color:#999':'')+'" aria-label="Pin '+n+'">'+n+'</button>';
+for(n=1;n<=12;n++)h+='<button data-pin="'+n+'" style="background:'+C[PIN[n][0]]+'" aria-label="Pin '+n+'">'+n+'</button>';
+h+='<div class="lbl"><span>pin 1</span><span>pin 12</span></div>';$('conn').innerHTML=h;
+[].forEach.call($('conn').querySelectorAll('[data-pin]'),function(b){b.onclick=function(){var p=PIN[b.dataset.pin];press($('conn'),'data-pin',b.dataset.pin);
+  $('pin-n').textContent='Pin '+b.dataset.pin+' · '+CN[p[0]];$('pin-v').textContent=p[1];$('pin-h').textContent=p[1];$('pin-p').textContent=PD[p[1]]}});
+
+/* ---------- tolerancia ---------- */
+var rail=12;
+function tDraw(){press($('rail'),'data-r',rail);
+  var lo=rail*0.85,hi=rail*1.15,v=lo+(hi-lo)*(+$('rd').value/100),mn=rail*0.95,mx=rail*1.05,pct=function(x){return ((x-lo)/(hi-lo)*100)+'%'};
+  $('tok').style.left=pct(mn);$('tok').style.width='calc('+pct(mx)+' - '+pct(mn)+')';$('tn').style.left='calc('+pct(v)+' - 3px)';
+  $('tlo').style.left=pct(mn);$('tlo').textContent=fx(mn,2);$('thi').style.left=pct(mx);$('thi').textContent=fx(mx,2);
+  $('t-l').textContent='Riel de '+rail+' V · lectura';$('t-v').textContent=fx(v,2)+' V';
+  var d=(v-rail)/rail*100,ok=Math.abs(d)<=5;
+  $('t-msg').textContent=(ok?'Dentro de tolerancia':'Fuera de tolerancia')+': '+(d>=0?'+':'')+fx(d,1)+' %. '+(ok?'El riel está bien.':'Reemplaza la fuente.');
+  $('t-msg').style.background=ok?'#DFF3E5':'#F8D9D7'}
+[].forEach.call($('rail').children,function(b){b.onclick=function(){rail=+b.dataset.r;$('rd').value=50;tDraw()}});$('rd').oninput=tDraw;tDraw();
+
+/* ---------- calculadora de vatios ---------- */
+var WC=[['Procesador',[['Oficina',65],['Escritorio',125],['Alto rendimiento',250]],1],
+ ['Tarjeta de video',[['Integrada',0],['Media',220],['Alta',320],['Tope',450]],1],
+ ['Tarjeta madre',[['Básica',40],['Avanzada',60]],0],
+ ['Memoria',[['2 módulos',10],['4 módulos',20]],0],
+ ['Discos',[['1 SSD',8],['SSD + HDD',15],['4 discos',35]],1],
+ ['Ventiladores y USB',[['Pocos',15],['Muchos',30]],0]];
+var sel=WC.map(function(r){return r[2]});
+function wDraw(){var h='';WC.forEach(function(r,i){h+='<div class="rowp"><b>'+r[0]+'</b><div class="seg">'+r[1].map(function(o,j){return '<button data-wi="'+i+'" data-wj="'+j+'" aria-pressed="'+(sel[i]===j)+'">'+o[0]+' · '+o[1]+' W</button>'}).join('')+'</div></div>'});
+  $('wc').innerHTML=h;[].forEach.call($('wc').querySelectorAll('[data-wi]'),function(b){b.onclick=function(){sel[+b.dataset.wi]=+b.dataset.wj;wDraw()}});
+  var t=WC.reduce(function(a,r,i){return a+r[1][sel[i]][1]},0),m=t*1.3,rec=Math.ceil(m/50)*50,rec2=rec+50;
+  $('w-t').textContent=t+' W';$('w-m').textContent=Math.round(m)+' W';$('w-r').textContent='Recomendación: fuente de calidad de '+rec+' a '+rec2+' W, con certificación 80 PLUS.'}
+wDraw();
+
+/* ---------- eficiencia ---------- */
+var ef=90;function eDraw(){press($('ef'),'data-e',ef);var w=+$('e-w').value,inp=w/(ef/100);$('e-wv').textContent=w+' W';$('e-in').textContent=Math.round(inp)+' W';$('e-h').textContent=Math.round(inp-w)+' W'}
+[].forEach.call($('ef').children,function(b){b.onclick=function(){ef=+b.dataset.e;eDraw()}});$('e-w').oninput=eDraw;eDraw();
+
+/* ---------- diagnóstico ---------- */
+[['No enciende; el ventilador de la fuente no gira','Fuente dañada, fusible interno o cable de corriente.','Prueba el tomacorriente, el cable y la fuente con el probador.'],
+ ['Enciende un segundo y se apaga','Un corto, sobrecarga o fuente defectuosa (la protección la apaga).','Configuración mínima; prueba la fuente fuera del equipo.'],
+ ['Reinicios bajo carga (juegos, video)','Potencia insuficiente o voltaje de 12 V bajo.','Mide 12 V bajo carga; usa una fuente de más vatios.'],
+ ['Ruido, olor a quemado o chasquido','Ventilador o componente interno dañado.','Desconecta de inmediato y reemplaza la fuente.'],
+ ['Choques eléctricos al tocar la caja','Falla de tierra en el edificio o en la fuente.','No uses el equipo; revisa el tomacorriente y la fuente.']
+].forEach(function(d){var b=document.createElement('button');b.textContent=d[0];b.setAttribute('aria-pressed','false');b.onclick=function(){
+  [].forEach.call($('dx').children,function(x){x.setAttribute('aria-pressed',x===b)});
+  $('dx-k').textContent='CAUSA PROBABLE';$('dx-h').textContent=d[0];$('dx-c').textContent=d[1];$('dx-s').textContent='Qué hacer: '+d[2]};$('dx').appendChild(b)});
+
+/* ---------- ¿seguro o peligroso? ---------- */
+var SF=[['Probar la fuente con el probador, con las manos secas y sin joyas.',1,'Seguro: así se hace la verificación en el laboratorio.'],
+ ['Abrir la fuente para cambiar un capacitor hinchado.',0,'Peligroso: los capacitores retienen carga. La fuente se reemplaza completa.'],
+ ['Conectar varias extensiones una detrás de otra para alimentar el laboratorio.',0,'Peligroso: sobrecarga el circuito y puede causar un incendio.'],
+ ['Usar una UPS con regulador de voltaje en una oficina de Puerto Rico.',1,'Seguro y recomendado: protege de apagones cortos y variaciones de voltaje.'],
+ ['Usar la pulsera ESD mientras se revisa el interior de una fuente abierta.',0,'Peligroso: la pulsera da un camino a tierra a través de tu cuerpo.'],
+ ['Desconectar el equipo y esperar antes de abrir la caja.',1,'Seguro: es el primer paso de cualquier reparación.']];
+var si=0,sa=false;
+function sfShow(){$('sf-q').textContent=SF[si][0];$('sf-n').textContent='Situación '+(si+1)+' de '+SF.length;sa=false;
+  [].forEach.call(document.querySelectorAll('[data-sf]'),function(b){b.classList.remove('ok','bad')});$('sf-why').textContent='¿Seguro o peligroso?';$('sf-next').disabled=true;$('sf-next').textContent=si===SF.length-1?'Empezar de nuevo':'Siguiente situación'}
+[].forEach.call(document.querySelectorAll('[data-sf]'),function(b){b.onclick=function(){if(sa)return;sa=true;var ok=+b.dataset.sf===SF[si][1];b.classList.add(ok?'ok':'bad');
+  if(!ok)[].forEach.call(document.querySelectorAll('[data-sf]'),function(x){if(+x.dataset.sf===SF[si][1])x.classList.add('ok')});$('sf-why').textContent=(ok?'¡Bien! ':'No. ')+SF[si][2];$('sf-next').disabled=false}});
+$('sf-next').onclick=function(){si=si===SF.length-1?0:si+1;sfShow()};sfShow();
+
+/* ---------- ejercicio ---------- */
+Kit.quiz($('qz'),[
+ ['Una tarjeta de video consume 180 W en el riel de 12 V. ¿Cuánta corriente pide?',['2160 A','15 A','192 A','6.7 A'],1,'I = P ÷ V = 180 ÷ 12 = 15 A.'],
+ ['¿Qué voltaje lleva el cable amarillo?',['+3.3 V','+5 V','+12 V','Tierra'],2,'Amarillo = +12 V; rojo = +5 V; naranja = +3.3 V; negro = tierra.'],
+ ['Mides 11.2 V en el riel de 12 V. ¿Qué haces?',['Nada: está bien','Reemplazar la fuente: está fuera de ±5 %','Cambiar el cable amarillo','Subir el selector a 230 V'],1,'El mínimo aceptable es 11.40 V (12 × 0.95). 11.2 V está fuera de tolerancia.'],
+ ['El selector está en 230 V y conectas la fuente en Puerto Rico (120 V). ¿Qué pasa?',['Se destruye','No enciende o funciona mal','Funciona normal','Da el doble de potencia'],1,'Recibe la mitad del voltaje que espera. Al revés (115 V en 230 V) sí se destruye.'],
+ ['Una fuente Gold (90 %) entrega 450 W a los componentes. ¿Cuánto toma de la pared?',['405 W','450 W','500 W','540 W'],2,'450 ÷ 0.90 = 500 W; 50 W se pierden como calor.'],
+ ['¿Por qué no se usa la pulsera ESD con una fuente abierta?',['Porque se daña la pulsera','Porque crea un camino a tierra por el cuerpo ante el alto voltaje','Porque la fuente no tiene estática','Porque es más rápido sin ella'],1,'Con alto voltaje la pulsera es un riesgo para la persona. Las fuentes no se abren.']
+]);
+
+Deck.start();
+})();
+</script>
+</body>
+</html>

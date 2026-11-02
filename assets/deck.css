@@ -145,3 +145,6 @@ h1,h2,h3,.q,.lead{text-wrap:balance}
 p,li,dd{text-wrap:pretty}
 code{white-space:nowrap}
 .stepn{font-size:20px!important;color:var(--ink)!important}
+
+/* lo oculto se queda oculto aunque tenga display propio (pestañas con grid) */
+[hidden]{display:none!important}
