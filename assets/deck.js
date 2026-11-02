@@ -1,5 +1,5 @@
 /* TESI 2108 · motor común (heredado de TESI 2105) de presentaciones interactivas
-   Uso: <script src="assets/deck.js"></script> al final de la página, después de las láminas.
+   Uso: cargar assets/deck.js con una etiqueta script al final de la página, después de las láminas.
    Láminas: <section class="slide" data-title="…">. Capítulos: class="slide chapter".
    Entradas animadas: data-a en los elementos (máx. 4 pasos por lámina).
    Títulos con máscara: <h2 class="mask"><span>…</span></h2>.
