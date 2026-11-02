@@ -1,0 +1,635 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Unidad A: Introducción · TESI 2108</title>
+<meta name="description" content="TESI 2108 Reparación de Computadoras. Unidad A: introducción a la reparación de computadoras, recorrida como un museo de la computación.">
+<link rel="preload" href="assets/fonts/schibsted-grotesk-latin-800-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="assets/deck.css">
+<style>
+/* Tema de la Unidad A: el Museo de la Computación. Paredes de galería, fichas de exhibición y salas. */
+:root{--ground:#F1EEE7;--tone:#E4DED2;--tone2:#D5CCBA;--ink:#1D1C1A;--soft:#4F4A42;--accent:#0E2A47;--accent-ink:#fff;--field:#22201D;--field-ink:#F5F1E8;--hi:#FFC425;--brass:#B8913A}
+#bar{background:#22201D}
+#map button.ch{background:transparent;box-shadow:inset 0 0 0 3px var(--brass)}
+#map button.ch.seen{background:var(--brass)}
+#map button.cur,#map button.ch.cur{background:var(--hi);box-shadow:none}
+
+/* salas (capítulos) */
+.sala{position:absolute;inset:0;padding:64px 80px;display:flex;flex-direction:column}
+.sala .no{font-size:30px;font-weight:700;color:var(--brass);letter-spacing:.02em}
+.sala .ch-title{font-size:92px;line-height:.98;letter-spacing:-.035em;font-weight:800;max-width:860px;margin-top:18px}
+.sala .what{font-size:28px;line-height:1.35;max-width:760px;margin-top:26px;opacity:.85}
+.sala .plano{margin-top:auto;display:flex;gap:10px}
+.sala .plano span{flex:1;height:64px;background:rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;color:rgba(245,241,232,.55)}
+.sala .plano span.on{background:var(--brass);color:#1D1C1A}
+.sala .obra{position:absolute;right:80px;top:64px;width:330px;height:330px;background:#fff;padding:14px}
+.sala .obra img{width:100%;height:100%;object-fit:cover;display:block}
+.sala.has-obra .ch-title{max-width:720px;font-size:80px}
+.sala.has-obra .what{max-width:700px}
+
+/* fichas de exhibición */
+.ficha{background:#fff;padding:22px 26px}
+.ficha .yr{font-size:20px;font-weight:700;color:var(--brass)}
+.ficha h3{margin-top:4px}
+.ficha p{font-size:21px;line-height:1.4;margin-top:8px;color:var(--soft)}
+.grid4{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+
+/* fotos */
+figure.foto{margin:0;background:#fff;padding:12px;display:flex;flex-direction:column}
+figure.foto .ph{flex:1;min-height:0;position:relative;background:var(--tone);overflow:hidden}
+figure.foto img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+figure.foto.contain img{object-fit:contain;background:#fff}
+figure.foto figcaption{font-size:15px;line-height:1.3;margin-top:8px;color:var(--soft)}
+figure.foto figcaption a{color:var(--soft)}
+figure.foto .ph .alt{position:absolute;inset:0;display:none;align-items:center;justify-content:center;text-align:center;padding:16px;font-size:20px;font-weight:600;color:var(--soft)}
+figure.foto.nofoto .ph .alt{display:flex}
+
+/* línea de tiempo */
+.tl{display:flex;gap:8px;margin-top:22px}
+.tl button{flex:1;padding:14px 8px;font-size:22px;font-weight:800;background:var(--tone)}
+.tl button[aria-pressed=true]{background:var(--ink);color:var(--ground)}
+.tl-view{display:grid;grid-template-columns:420px 1fr;gap:32px;margin-top:22px;height:352px}
+.tl-view .ficha{display:flex;flex-direction:column;justify-content:center}
+.tl-view .ficha .big{font-size:76px;font-weight:800;letter-spacing:-.03em;line-height:1}
+.tl-view .ficha h3{font-size:34px;margin-top:10px}
+.tl-view .ficha p{font-size:23px}
+
+/* Moore */
+.moore{display:grid;grid-template-columns:1fr 340px;gap:32px;margin-top:22px}
+.mchart{position:relative;height:430px;background:#fff;padding:20px 20px 60px 64px}
+.mchart .ax{position:absolute;left:8px;font-size:15px;color:var(--soft)}
+.mchart .gl{position:absolute;left:64px;right:20px;height:2px;background:var(--tone)}
+.mchart .bars{position:absolute;left:64px;right:20px;top:20px;bottom:60px;display:flex;align-items:flex-end;gap:14px}
+.mchart .b{flex:1;background:var(--accent);position:relative;transition:height .8s var(--ease-expo)}
+.mchart .b.you{background:var(--brass)}
+.mchart .b span{position:absolute;top:100%;margin-top:6px;left:50%;transform:translateX(-50%);font-size:15px;line-height:1.15;text-align:center;white-space:nowrap;color:var(--soft)}
+.stat{background:var(--field);color:var(--field-ink);padding:22px 26px}
+.stat .v{font-size:52px;font-weight:800;letter-spacing:-.03em;line-height:1.05;color:var(--hi)}
+.stat .l{font-size:20px;margin-top:6px}
+
+/* clasificadores */
+.chips{display:flex;flex-wrap:wrap;gap:12px}
+.chip{font:600 22px var(--sans);padding:14px 20px;background:#fff;color:var(--ink)}
+.chip.sel{background:var(--ink);color:var(--ground)}
+.chip.ok{background:#2E9E6B;color:#fff}
+.chip.bad{background:#C0392B;color:#fff}
+.bins{display:grid;gap:14px;margin-top:22px}
+.bin{background:var(--tone);padding:16px 18px;min-height:150px}
+.bin h3{font-size:24px}
+.bin .in{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.bin .in span{font-size:18px;font-weight:600;background:#fff;padding:6px 10px}
+.bin button{width:100%;margin-top:10px}
+.msg{background:#fff;padding:14px 18px;font-size:21px;min-height:56px;margin-top:16px}
+
+/* von Neumann */
+.vn{position:relative;height:420px;margin-top:20px}
+.vn .blk{position:absolute;background:#fff;padding:14px 18px;font-size:20px;transition:background .35s,color .35s}
+.vn .blk b{display:block;font-size:26px}
+.vn .blk.lit{background:var(--hi)}
+.vn .bus{position:absolute;left:0;right:0;bottom:0;height:64px;background:var(--field);color:var(--field-ink);display:flex;align-items:center;justify-content:center;font-size:21px;font-weight:600}
+.vn .pk{position:absolute;width:150px;height:44px;background:var(--brass);color:#1D1C1A;font:700 18px var(--mono);display:flex;align-items:center;justify-content:center;transition:left .7s var(--ease-in-out),top .7s var(--ease-in-out),opacity .3s}
+
+/* bytes */
+.calc{display:grid;grid-template-columns:1fr 1fr;gap:28px;margin-top:22px}
+.calc .row input{font:700 40px var(--sans);width:180px;padding:10px 14px;border:0;background:#fff}
+.calc .out{font-size:24px;line-height:1.5}
+.calc .out b{font-size:36px;font-weight:800;letter-spacing:-.02em;display:block}
+
+/* ciclo EPAS */
+.epas{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:20px}
+
+/* componentes */
+.comp{display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:228px 228px;gap:16px;margin-top:18px}
+.comp figure.foto{cursor:pointer;position:relative}
+.comp .info{position:absolute;inset:12px 12px 36px 12px;background:#1D1C1A;color:#F5F1E8;padding:16px;font-size:19px;line-height:1.35;display:none}
+.comp .info b{display:block;font-size:22px;color:var(--hi);margin-bottom:4px}
+.comp figure.open .info{display:block}
+
+/* Ohm */
+.ohm{display:grid;grid-template-columns:1fr 1fr;gap:32px;margin-top:22px}
+.ohm label{font-size:22px;font-weight:600;display:flex;justify-content:space-between}
+.ohm input[type=range]{width:100%;height:36px;accent-color:var(--accent)}
+.ohm .res{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.wave{background:#fff;padding:16px}
+.wave svg{display:block;width:100%;height:150px}
+@media (prefers-reduced-motion:no-preference){.on .wave .ac{animation:slide 2.4s linear infinite}}
+@keyframes slide{to{transform:translateX(-120px)}}
+
+/* ejercicio final */
+.quiz{margin-top:16px}
+.quiz .q{font-size:30px;font-weight:700;line-height:1.2;min-height:76px}
+.quiz .ops{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+.quiz .ops button{text-align:left;font-size:22px;padding:16px 18px;background:#fff}
+.quiz .ops button.ok{background:#2E9E6B;color:#fff}
+.quiz .ops button.bad{background:#C0392B;color:#fff}
+.quiz .why{font-size:21px;margin-top:14px;min-height:62px;background:var(--tone);padding:12px 16px}
+.quiz .foot{display:flex;justify-content:space-between;align-items:center;margin-top:14px;font-size:21px;font-weight:600}
+.dots{display:flex;gap:6px}.dots i{width:22px;height:10px;background:var(--tone2)}.dots i.ok{background:#2E9E6B}.dots i.bad{background:#C0392B}.dots i.cur{background:var(--ink)}
+
+.tools .ficha{padding:14px 20px}.tools .ficha p{font-size:19px;margin-top:4px}
+.discrow{position:absolute;left:72px;right:72px;bottom:40px}
+.field-hi .q{font-size:60px;line-height:1.05;letter-spacing:-.03em;font-weight:800;max-width:1100px}
+.cred-list{columns:2;column-gap:40px;font-size:17px;line-height:1.45;margin-top:16px;padding-left:22px}
+.cred-list a{color:var(--ink)}
+</style>
+</head>
+<body>
+<div id="viewport"><div id="stage" data-name="TESI 2108 · Unidad A">
+
+<!-- 1 portada -->
+<section class="slide chapter" data-title="Portada">
+  <div class="sala has-obra">
+    <div class="no" data-a>Museo de la Computación · TESI 2108</div>
+    <h1 class="mask" style="margin-top:22px;max-width:740px;font-size:64px;line-height:1"><span>Unidad A: Introducción a la reparación de computadoras</span></h1>
+    <p class="what" data-a>Semana 2 · lunes 24 de agosto de 2026<br>Prof. Eduardo O. De Jesús Arroyo · Instituto Tecnológico de Puerto Rico</p>
+    <div class="plano" data-a><span>Sala 1</span><span>Sala 2</span><span>Sala 3</span><span>Sala 4</span><span>Sala 5</span></div>
+    <figure class="obra foto" data-a style="padding:14px"><div class="ph"><img data-cm="Classic_shot_of_the_ENIAC.jpg" data-w="700" alt="La computadora ENIAC en 1946, ocupando un salón entero"><div class="alt">ENIAC, 1946</div></div></figure>
+  </div>
+</section>
+
+<!-- 2 recorrido -->
+<section class="slide" data-title="El recorrido de hoy">
+  <h2 class="mask"><span>El recorrido de hoy: cinco salas</span></h2>
+  <p class="lead sub" data-a>Toca una sala para ir directo. Al final de cada una podrás describir, resumir, reconocer y aplicar.</p>
+  <div class="grid3 gap" data-a style="grid-template-columns:repeat(5,1fr);gap:14px">
+    <button class="ficha" data-goto="sala1" style="text-align:left;height:250px"><span class="yr">Sala 1</span><h3>El curso y la profesión</h3><p>Qué hace un técnico</p></button>
+    <button class="ficha" data-goto="sala2" style="text-align:left;height:250px"><span class="yr">Sala 2</span><h3>Historia y evolución</h3><p>De tubos al vacío a multinúcleo</p></button>
+    <button class="ficha" data-goto="sala3" style="text-align:left;height:250px"><span class="yr">Sala 3</span><h3>Hardware, software y arquitectura</h3><p>Lo físico y lo lógico</p></button>
+    <button class="ficha" data-goto="sala4" style="text-align:left;height:250px"><span class="yr">Sala 4</span><h3>Procesamiento y componentes</h3><p>Entrada a salida</p></button>
+    <button class="ficha" data-goto="sala5" style="text-align:left;height:250px"><span class="yr">Sala 5</span><h3>Electricidad y seguridad</h3><p>Trabajar sin dañar nada</p></button>
+  </div>
+  <p class="small gap" data-a>Al final: un ejercicio corto de seis preguntas para comprobar lo aprendido.</p>
+</section>
+
+<!-- SALA 1 -->
+<section class="slide chapter" data-title="Sala 1: El curso y la profesión" id="sala1">
+  <div class="sala">
+    <div class="no" data-a>Sala 1</div>
+    <h2 class="ch-title mask"><span>El curso y la profesión</span></h2>
+    <p class="what" data-a>Para qué sirve este curso, qué hace un técnico de reparación y cómo la tecnología de la información cambia su trabajo.</p>
+    <div class="plano" data-a><span class="on">Sala 1</span><span>Sala 2</span><span>Sala 3</span><span>Sala 4</span><span>Sala 5</span></div>
+  </div>
+</section>
+
+<section class="slide" data-title="¿Qué hace un técnico?">
+  <h2 class="mask"><span>¿Qué hace un técnico de reparación?</span></h2>
+  <div class="grid4 gap">
+    <div class="ficha" data-a><span class="yr">01</span><h3>Diagnostica</h3><p>Encuentra la causa real de la falla con un método ordenado, no adivinando.</p></div>
+    <div class="ficha" data-a><span class="yr">02</span><h3>Repara y ensambla</h3><p>Reemplaza, instala y configura componentes y programas.</p></div>
+    <div class="ficha" data-a><span class="yr">03</span><h3>Mantiene</h3><p>Previene fallas con limpieza, actualizaciones y respaldos.</p></div>
+    <div class="ficha" data-a><span class="yr">04</span><h3>Documenta y sirve</h3><p>Anota lo que hizo y se lo explica al cliente con claridad.</p></div>
+  </div>
+  <p class="small sub">El curso también prepara para la certificación CompTIA A+ (Core 1).</p>
+</section>
+
+<section class="slide" data-title="La TI hoy">
+  <h2 class="mask"><span>La tecnología de la información cambia el taller</span></h2>
+  <div class="grid3 gap">
+    <div class="ficha" data-a><span class="yr">Nube y trabajo remoto</span><h3>Todo está conectado</h3><p>Archivos y servicios en línea; el técnico da soporte a distancia y la conexión a Internet es crítica.</p></div>
+    <div class="ficha" data-a><span class="yr">Ciberseguridad</span><h3>Cada equipo es una puerta</h3><p>Actualizaciones, antivirus y protección de los datos del cliente son parte de cada reparación.</p></div>
+    <div class="ficha" data-a><span class="yr">Ambiente y ética</span><h3>Responsabilidad</h3><p>Reciclaje de equipos y baterías, eliminación segura de datos y respeto a la privacidad.</p></div>
+  </div>
+  <div class="tone gap" data-a style="font-size:24px">En Puerto Rico, después de cada huracán aumenta la demanda de respaldos, baterías UPS y protección contra variaciones de voltaje.</div>
+</section>
+
+<section class="slide field-hi" data-title="Conversemos: su experiencia">
+  <p class="small" style="color:var(--ink);font-size:24px;font-weight:700">Conversemos</p>
+  <p class="q sub">¿Qué equipo ha intentado reparar alguna vez? ¿Qué falló y cómo lo resolvió?</p>
+  <div class="discrow"><div class="timer" data-timer="180"></div></div>
+</section>
+
+<!-- SALA 2 -->
+<section class="slide chapter" data-title="Sala 2: Historia y evolución" id="sala2">
+  <div class="sala has-obra">
+    <div class="no" data-a>Sala 2</div>
+    <h2 class="ch-title mask"><span>Historia y evolución</span></h2>
+    <p class="what" data-a>No se trata de memorizar fechas, sino de entender por qué los equipos son cada vez más pequeños, rápidos y baratos.</p>
+    <div class="plano" data-a><span>Sala 1</span><span class="on">Sala 2</span><span>Sala 3</span><span>Sala 4</span><span>Sala 5</span></div>
+    <figure class="obra foto" data-a><div class="ph"><img data-cm="Replica-of-first-transistor.jpg" data-w="700" alt="Réplica del primer transistor, Bell Labs 1947"><div class="alt">Primer transistor, 1947</div></div></figure>
+  </div>
+</section>
+
+<section class="slide" data-title="Hitos de la computación">
+  <h2 class="mask"><span>Hitos de la computación</span></h2>
+  <div class="tl" id="tl" data-a></div>
+  <div class="tl-view" data-a>
+    <figure class="foto" id="tl-fig"><div class="ph"><img id="tl-img" alt=""><div class="alt" id="tl-alt"></div></div><figcaption id="tl-cap"></figcaption></figure>
+    <div class="ficha"><div class="big" id="tl-yr"></div><h3 id="tl-h"></h3><p id="tl-p"></p></div>
+  </div>
+</section>
+
+<section class="slide" data-title="Generaciones de computadoras">
+  <h2 class="mask"><span>Cinco generaciones de computadoras</span></h2>
+  <div data-tabs="g1" class="gap" data-a>
+    <div class="row"><button data-tab="g1">1.ª · 1940–1956</button><button data-tab="g2">2.ª · 1956–1963</button><button data-tab="g3">3.ª · 1964–1971</button><button data-tab="g4">4.ª · 1971–hoy</button><button data-tab="g5">5.ª · en desarrollo</button></div>
+    <div class="ficha" data-panel="g1" style="margin-top:20px;min-height:250px"><span class="yr">Tecnología base</span><h3 style="font-size:40px">Tubos al vacío</h3><p style="font-size:25px">Enormes, consumían mucha energía y producían mucho calor. Un tubo quemado detenía la máquina. Ejemplo: ENIAC.</p></div>
+    <div class="ficha" data-panel="g2" style="margin-top:20px;min-height:250px"><span class="yr">Tecnología base</span><h3 style="font-size:40px">Transistores</h3><p style="font-size:25px">Más pequeñas, rápidas y confiables. Aparecen los primeros lenguajes de alto nivel como COBOL y FORTRAN.</p></div>
+    <div class="ficha" data-panel="g3" style="margin-top:20px;min-height:250px"><span class="yr">Tecnología base</span><h3 style="font-size:40px">Circuitos integrados</h3><p style="font-size:25px">Muchos transistores en un solo chip. Llegan el teclado, el monitor y los sistemas operativos.</p></div>
+    <div class="ficha" data-panel="g4" style="margin-top:20px;min-height:250px"><span class="yr">Tecnología base</span><h3 style="font-size:40px">Microprocesadores</h3><p style="font-size:25px">Toda la CPU en un chip. Nacen la computadora personal, la laptop y el teléfono inteligente.</p></div>
+    <div class="ficha" data-panel="g5" style="margin-top:20px;min-height:250px"><span class="yr">Tecnología base</span><h3 style="font-size:40px">Procesamiento paralelo e inteligencia artificial</h3><p style="font-size:25px">Máquinas que aprenden de los datos. Las fechas de cada generación varían según el autor.</p></div>
+  </div>
+</section>
+
+<section class="slide" data-title="La Ley de Moore">
+  <h2 class="mask"><span>La Ley de Moore: el doble cada dos años</span></h2>
+  <div class="moore">
+    <div class="mchart" id="mchart" data-a></div>
+    <div data-a>
+      <div class="stat"><div class="v" id="m-n">2,300</div><div class="l" id="m-y">transistores en 1971</div></div>
+      <div class="row" style="margin-top:14px"><button class="go" id="m-go">+2 años: duplicar</button><button id="m-rs">Reiniciar</button></div>
+      <p class="small" id="m-msg" style="margin-top:14px">Empieza con el Intel 4004. Cada clic duplica los transistores, como predijo Gordon Moore.</p>
+    </div>
+  </div>
+</section>
+
+<!-- SALA 3 -->
+<section class="slide chapter" data-title="Sala 3: Hardware, software y arquitectura" id="sala3">
+  <div class="sala">
+    <div class="no" data-a>Sala 3</div>
+    <h2 class="ch-title mask"><span>Hardware, software y arquitectura</span></h2>
+    <p class="what" data-a>Lo que se toca, lo que son instrucciones y cómo se organiza todo por dentro.</p>
+    <div class="plano" data-a><span>Sala 1</span><span>Sala 2</span><span class="on">Sala 3</span><span>Sala 4</span><span>Sala 5</span></div>
+  </div>
+</section>
+
+<section class="slide" data-title="Clasifica: hardware, software o firmware">
+  <h2 class="mask"><span>¿Hardware, software o firmware?</span></h2>
+  <p class="body sub" data-a>Toca un elemento y luego la categoría donde va.</p>
+  <div class="chips gap" id="hs-chips" data-a style="margin-top:18px"></div>
+  <div class="bins" data-a style="grid-template-columns:repeat(3,1fr)">
+    <div class="bin" data-bin="h"><h3>Hardware</h3><p class="small">Se puede tocar</p><div class="in"></div></div>
+    <div class="bin" data-bin="s"><h3>Software</h3><p class="small">Instrucciones que se instalan</p><div class="in"></div></div>
+    <div class="bin" data-bin="f"><h3>Firmware</h3><p class="small">Software grabado en un chip</p><div class="in"></div></div>
+  </div>
+  <div class="msg" id="hs-msg">Regla práctica: si se puede tocar, es hardware.</div>
+</section>
+
+<section class="slide" data-title="Arquitectura de von Neumann">
+  <h2 class="mask"><span>Arquitectura de von Neumann</span></h2>
+  <div class="cols" style="grid-template-columns:1fr 330px;gap:28px">
+    <div class="vn" id="vn" data-a>
+      <div class="blk" data-vn="cpu" style="left:0;top:0;width:430px;height:300px;background:var(--field);color:var(--field-ink)"><b style="color:var(--hi)">CPU</b>
+        <div class="blk" data-vn="uc" style="position:static;margin-top:12px;color:var(--ink)">Unidad de control</div>
+        <div class="blk" data-vn="alu" style="position:static;margin-top:10px;color:var(--ink)">ALU: cálculos y comparaciones</div>
+        <div class="blk" data-vn="reg" style="position:static;margin-top:10px;color:var(--ink)">Registros</div>
+      </div>
+      <div class="blk" data-vn="ram" style="right:0;top:0;width:300px;height:140px"><b>Memoria (RAM)</b>Programas y datos juntos</div>
+      <div class="blk" data-vn="io" style="right:0;top:160px;width:300px;height:140px"><b>Entrada y salida</b>Teclado, pantalla, discos</div>
+      <div class="bus">Bus del sistema: datos · direcciones · control</div>
+      <div class="pk" id="vn-pk" style="left:520px;top:48px;opacity:0">SUMA A,B</div>
+    </div>
+    <div data-a>
+      <div class="ficha" style="min-height:250px"><span class="yr" id="vn-n">Paso 0 de 4</span><h3 id="vn-h">El ciclo de instrucción</h3><p id="vn-p">La CPU repite millones de veces por segundo: buscar, decodificar, ejecutar y guardar.</p></div>
+      <div class="row" style="margin-top:14px"><button class="go" id="vn-go">Siguiente paso</button><button id="vn-rs">Reiniciar</button></div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-title="Bits, bytes y capacidad">
+  <h2 class="mask"><span>¿Por qué 1 TB se ve como 931 GB?</span></h2>
+  <div class="calc">
+    <div data-a>
+      <table class="t"><tr><th>Unidad</th><th>Equivale a</th></tr>
+        <tr><td>Bit</td><td>0 o 1</td></tr><tr><td>Byte</td><td>8 bits: una letra</td></tr>
+        <tr><td>Kilobyte (KB)</td><td>1,000 bytes</td></tr><tr><td>Megabyte (MB)</td><td>1,000 KB</td></tr>
+        <tr><td>Gigabyte (GB)</td><td>1,000 MB</td></tr><tr><td>Terabyte (TB)</td><td>1,000 GB</td></tr></table>
+    </div>
+    <div data-a>
+      <div class="ficha">
+        <h3>Escribe la capacidad del disco</h3>
+        <div class="row" style="margin-top:12px"><input id="tb" type="number" min="0.1" step="0.5" value="1" aria-label="Capacidad en terabytes"><span style="font-size:32px;font-weight:700">TB</span></div>
+        <div class="out" style="margin-top:16px"><span>El fabricante cuenta en múltiplos de 1,000:</span><b id="tb-b">1,000,000,000,000 bytes</b><span>Windows divide entre 1,024 tres veces y muestra:</span><b id="tb-w" style="color:var(--brass)">931 GB</b></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SALA 4 -->
+<section class="slide chapter" data-title="Sala 4: Procesamiento y componentes" id="sala4">
+  <div class="sala has-obra">
+    <div class="no" data-a>Sala 4</div>
+    <h2 class="ch-title mask"><span>Procesamiento y componentes</span></h2>
+    <p class="what" data-a>El ciclo entrada, procesamiento, almacenamiento y salida, y las piezas que lo hacen posible.</p>
+    <div class="plano" data-a><span>Sala 1</span><span>Sala 2</span><span>Sala 3</span><span class="on">Sala 4</span><span>Sala 5</span></div>
+    <figure class="obra foto" data-a><div class="ph"><img data-cm="Atx_computer_motherboard_with_cpu_and_fan.jpg" data-w="700" alt="Tarjeta madre ATX con su procesador y ventilador"><div class="alt">Tarjeta madre ATX</div></div></figure>
+  </div>
+</section>
+
+<section class="slide" data-title="Ciclo de procesamiento">
+  <h2 class="mask"><span>El ciclo de procesamiento de datos</span></h2>
+  <p class="body sub" data-a>Toca un dispositivo y luego la etapa del ciclo donde participa.</p>
+  <div class="chips" id="ep-chips" data-a style="margin-top:16px"></div>
+  <div class="epas bins" data-a>
+    <div class="bin" data-bin="e"><h3>1 · Entrada</h3><div class="in"></div></div>
+    <div class="bin" data-bin="p"><h3>2 · Procesamiento</h3><div class="in"></div></div>
+    <div class="bin" data-bin="a"><h3>3 · Almacenamiento</h3><div class="in"></div></div>
+    <div class="bin" data-bin="s"><h3>4 · Salida</h3><div class="in"></div></div>
+  </div>
+  <div class="msg" id="ep-msg">Ejemplo: escribes un mensaje (entrada), la CPU lo procesa, se guarda y aparece en pantalla (salida).</div>
+</section>
+
+<section class="slide" data-title="Componentes esenciales">
+  <h2 class="mask"><span>Componentes esenciales: toca cada pieza</span></h2>
+  <div class="comp" data-a>
+    <figure class="foto"><div class="ph"><img data-cm="Atx_computer_motherboard_with_cpu_and_fan.jpg" data-w="600" alt="Tarjeta madre"><div class="alt">Tarjeta madre</div></div><figcaption>Tarjeta madre</figcaption><div class="info"><b>Tarjeta madre</b>Conecta todos los componentes y los comunica entre sí. Unidad B.</div></figure>
+    <figure class="foto"><div class="ph"><img data-cm="Intel_CPU_Core_i7_12700K_Alder_Lake_top.jpg" data-w="600" alt="Procesador Intel Core i7"><div class="alt">Procesador (CPU)</div></div><figcaption>Procesador (CPU)</figcaption><div class="info"><b>CPU</b>Ejecuta las instrucciones de los programas. Unidad D.</div></figure>
+    <figure class="foto"><div class="ph"><img data-cm="RAM_Module_(SDRAM-DDR4).jpg" data-w="600" alt="Módulo de memoria DDR4"><div class="alt">Memoria RAM</div></div><figcaption>Memoria RAM</figcaption><div class="info"><b>Memoria RAM</b>Memoria de trabajo; se borra al apagar el equipo. Unidad E.</div></figure>
+    <figure class="foto"><div class="ph"><img data-cm="ATX_Computer_power_supply_unit.jpg" data-w="600" alt="Fuente de poder ATX"><div class="alt">Fuente de poder</div></div><figcaption>Fuente de poder</figcaption><div class="info"><b>Fuente de poder</b>Convierte la corriente alterna de la pared en corriente directa. Unidad C.</div></figure>
+    <figure class="foto"><div class="ph"><img data-cm="Hard_disk_platters_and_head.jpg" data-w="600" alt="Disco duro abierto con platos y cabezal"><div class="alt">Disco duro (HDD)</div></div><figcaption>Disco duro (HDD)</figcaption><div class="info"><b>Disco duro</b>Guarda datos en platos magnéticos que giran. Unidad F.</div></figure>
+    <figure class="foto"><div class="ph"><img data-cm="Samsung_980_PRO_PCIe_4.0_NVMe_SSD_1TB-top_PNr°0915.jpg" data-w="600" alt="Unidad de estado sólido M.2 NVMe"><div class="alt">Unidad de estado sólido (SSD)</div></div><figcaption>Unidad de estado sólido (SSD)</figcaption><div class="info"><b>SSD</b>Guarda datos en chips de memoria flash; sin partes móviles. Unidad F.</div></figure>
+  </div>
+</section>
+
+<!-- SALA 5 -->
+<section class="slide chapter" data-title="Sala 5: Electricidad y seguridad" id="sala5">
+  <div class="sala has-obra">
+    <div class="no" data-a>Sala 5</div>
+    <h2 class="ch-title mask"><span>Electricidad y seguridad</span></h2>
+    <p class="what" data-a>Voltaje, corriente, resistencia y potencia; la descarga electrostática y las reglas para trabajar sin riesgo.</p>
+    <div class="plano" data-a><span>Sala 1</span><span>Sala 2</span><span>Sala 3</span><span>Sala 4</span><span class="on">Sala 5</span></div>
+    <figure class="obra foto" data-a><div class="ph"><img data-cm="Digitalmultimeter.jpg" data-w="700" alt="Multímetro digital"><div class="alt">Multímetro digital</div></div></figure>
+  </div>
+</section>
+
+<section class="slide" data-title="Voltaje, corriente, resistencia y potencia">
+  <h2 class="mask"><span>Mueve los controles: la ley de Ohm</span></h2>
+  <div class="ohm">
+    <div data-a>
+      <label for="ov">Voltaje (V) <b id="ov-v">12 V</b></label><input type="range" id="ov" min="1" max="24" step="0.5" value="12">
+      <label for="or" style="margin-top:20px">Resistencia (R) <b id="or-v">4 Ω</b></label><input type="range" id="or" min="1" max="48" step="1" value="4">
+      <p class="small" style="margin-top:22px">Analogía del agua: el voltaje es la presión, la corriente es el caudal y la resistencia es lo estrecho del tubo.</p>
+    </div>
+    <div data-a>
+      <div class="res">
+        <div class="stat"><div class="v" id="oi">3.0 A</div><div class="l">Corriente: I = V ÷ R</div></div>
+        <div class="stat"><div class="v" id="op">36 W</div><div class="l">Potencia: P = V × I</div></div>
+      </div>
+      <div class="ficha" style="margin-top:16px"><h3>Unidades</h3><p>Voltio (V) · Amperio (A) · Ohmio (Ω) · Vatio (W)</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-title="Corriente alterna y directa">
+  <h2 class="mask"><span>Corriente alterna y corriente directa</span></h2>
+  <div class="cols gap">
+    <div data-a>
+      <div class="wave"><svg viewBox="0 0 480 150" aria-label="Onda alterna"><line x1="0" y1="75" x2="480" y2="75" stroke="#D5CCBA" stroke-width="2"/><g class="ac"><path d="M0 75 Q30 5 60 75 T120 75 T180 75 T240 75 T300 75 T360 75 T420 75 T480 75 T540 75 T600 75" fill="none" stroke="#B8913A" stroke-width="6"/></g></svg></div>
+      <h3 style="margin-top:16px">Alterna (AC): la toma de pared</h3>
+      <p class="body">Cambia de dirección 60 veces por segundo. En Puerto Rico: unos 120 V a 60 Hz. Peligrosa.</p>
+    </div>
+    <div data-a>
+      <div class="wave"><svg viewBox="0 0 480 150" aria-label="Línea directa"><line x1="0" y1="75" x2="480" y2="75" stroke="#D5CCBA" stroke-width="2"/><line x1="0" y1="40" x2="480" y2="40" stroke="#0E2A47" stroke-width="6"/></svg></div>
+      <h3 style="margin-top:16px">Directa (DC): los componentes</h3>
+      <p class="body">Fluye en una sola dirección. La fuente de poder entrega 12 V, 5 V y 3.3 V a los componentes.</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-title="Descarga electrostática (ESD)">
+  <h2 class="mask"><span>La descarga electrostática (ESD)</span></h2>
+  <div class="cols" style="grid-template-columns:400px 1fr;gap:32px;margin-top:22px">
+    <figure class="foto" data-a style="height:440px"><div class="ph"><img data-cm="Antistatic_wrist_strap.jpg" data-w="600" alt="Pulsera antiestática con su cable y pinza"><div class="alt">Pulsera antiestática</div></div><figcaption>Pulsera antiestática: se conecta al chasis o a una alfombra con conexión a tierra.</figcaption></figure>
+    <div>
+      <div class="stat" data-a><div class="v">≈ 3,000 V</div><div class="l">Es lo mínimo que una persona siente. Los componentes se dañan con mucho menos, y el daño puede aparecer semanas después.</div></div>
+      <div class="grid4" style="margin-top:18px" data-a>
+        <div class="ficha"><h3>Pulsera</h3><p>Conectada al chasis.</p></div>
+        <div class="ficha"><h3>Toca el chasis</h3><p>Antes de tocar piezas.</p></div>
+        <div class="ficha"><h3>Bolsas antiestáticas</h3><p>Las piezas van dentro, nunca encima.</p></div>
+        <div class="ficha"><h3>Ambiente</h3><p>Evita aire seco, alfombras y lana.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-title="¿Seguro o peligroso?">
+  <h2 class="mask"><span>¿Seguro o peligroso? Decide</span></h2>
+  <div class="quiz" id="sf" data-a>
+    <div class="q" id="sf-q"></div>
+    <div class="ops" style="grid-template-columns:1fr 1fr"><button data-sf="1">Seguro</button><button data-sf="0">Peligroso</button></div>
+    <div class="why" id="sf-why">Seis situaciones del laboratorio. Decide antes de que se revele la respuesta.</div>
+    <div class="foot"><span id="sf-n"></span><button class="go" id="sf-next">Siguiente situación</button></div>
+  </div>
+</section>
+
+<section class="slide" data-title="Herramientas del técnico">
+  <h2 class="mask"><span>Herramientas del técnico</span></h2>
+  <div class="cols" style="grid-template-columns:1fr 360px;gap:28px;margin-top:22px">
+    <div class="grid4 tools" data-a style="grid-template-columns:1fr 1fr;gap:12px">
+      <div class="ficha"><h3>Destornilladores</h3><p>Phillips #1 y #2, de paleta y Torx. Sin magnetizar cerca de discos.</p></div>
+      <div class="ficha"><h3>Pulsera ESD</h3><p>Protege los componentes, no a la persona.</p></div>
+      <div class="ficha"><h3>Multímetro y probador</h3><p>Miden voltajes; se usan a fondo en la Unidad C.</p></div>
+      <div class="ficha"><h3>Aire comprimido</h3><p>Limpia polvo. Nunca una aspiradora común: genera estática.</p></div>
+      <div class="ficha"><h3>Pinzas y linterna</h3><p>Recuperan tornillos e iluminan el interior.</p></div>
+      <div class="ficha"><h3>Tarjeta POST</h3><p>Muestra códigos de error al arrancar.</p></div>
+    </div>
+    <figure class="foto" data-a style="height:500px"><div class="ph"><img data-cm="Digitalmultimeter.jpg" data-w="500" alt="Multímetro digital"><div class="alt">Multímetro digital</div></div><figcaption>Multímetro digital</figcaption></figure>
+  </div>
+</section>
+
+<section class="slide field-hi" data-title="Actividad: reconoce los componentes">
+  <p class="small" style="color:var(--ink);font-size:24px;font-weight:700">Actividad en el laboratorio · grupos de tres</p>
+  <p class="q sub" style="font-size:52px">Desconecta la torre, ponte la pulsera, ábrela e identifica cada componente esencial. Ubícalo en el ciclo de procesamiento.</p>
+  <div class="discrow"><div class="timer" data-timer="1500"></div></div>
+</section>
+
+<!-- EJERCICIO -->
+<section class="slide" data-title="Ejercicio corto">
+  <h2 class="mask"><span>Ejercicio corto: seis preguntas</span></h2>
+  <div class="quiz" id="qz" data-a>
+    <div class="q" id="qz-q"></div>
+    <div class="ops" id="qz-ops"></div>
+    <div class="why" id="qz-why">Escoge una respuesta. Verás de inmediato si es correcta y por qué.</div>
+    <div class="foot"><div class="dots" id="qz-dots"></div><span id="qz-score"></span><button class="go" id="qz-next">Siguiente</button></div>
+  </div>
+</section>
+
+<section class="slide" data-title="Créditos y referencias">
+  <h2 class="mask"><span>Créditos de las fotos y referencias</span></h2>
+  <p class="small sub">Fotos de Wikimedia Commons. Cada enlace lleva a la página del archivo con su autor y licencia.</p>
+  <ol class="cred-list" id="creds"></ol>
+  <p class="small" style="margin-top:14px">Referencias: Meyers, M. (2025). <i>CompTIA A+ certification all-in-one exam guide</i> (11th ed.). McGraw-Hill · Docter, Q., &amp; Buhagiar, J. (2022). <i>CompTIA A+ complete study guide</i> (5th ed.). Sybex · Mueller, S. (2022). <i>Upgrading and repairing PCs</i> (22nd ed.). Que · Hennessy, J. L., &amp; Patterson, D. A. (2021). <i>Computer architecture</i> (6th ed.). Morgan Kaufmann · ITPR. (2026). Prontuario TESI 2108 (rev. mayo 2026).</p>
+</section>
+
+<section class="slide chapter" data-title="Cierre">
+  <div class="sala">
+    <div class="no" data-a>Fin del recorrido</div>
+    <h2 class="ch-title mask"><span>Próxima sala: la tarjeta madre</span></h2>
+    <p class="what" data-a>Próxima clase: lunes 31 de agosto, Unidad B. Repasa los componentes que identificaste hoy.</p>
+    <div class="plano" data-a><span class="on">Sala 1</span><span class="on">Sala 2</span><span class="on">Sala 3</span><span class="on">Sala 4</span><span class="on">Sala 5</span></div>
+  </div>
+</section>
+
+</div></div>
+<script src="assets/deck.js"></script>
+<script>
+(function(){
+'use strict';
+var $=function(i){return document.getElementById(i)};
+var CM='https://commons.wikimedia.org/wiki/';
+function fp(name,w){return CM+'Special:FilePath/'+encodeURIComponent(name)+'?width='+(w||800)}
+
+/* ---------- línea de tiempo (datos) ---------- */
+var TL=[
+ {y:'1946',h:'ENIAC',p:'Primera computadora electrónica de propósito general en EE. UU. Ocupaba un salón entero y usaba unos 18,000 tubos al vacío.',cm:'Classic_shot_of_the_ENIAC.jpg',alt:'La computadora ENIAC en 1946, ocupando un salón entero'},
+ {y:'1947',h:'El transistor',p:'Inventado en Bell Labs. Reemplazó los tubos al vacío: más pequeño, frío y confiable.',cm:'Replica-of-first-transistor.jpg',alt:'Réplica del primer transistor, Bell Labs 1947'},
+ {y:'1958',h:'El circuito integrado',p:'Muchos transistores dentro de un solo chip de silicio. Abrió el camino a las computadoras pequeñas.',cm:'Intel_4004_Chip_Layout_(29983532570).jpg',alt:'Diseño interno de un circuito integrado (Intel 4004)'},
+ {y:'1971',h:'Intel 4004',p:'El primer microprocesador comercial: toda la CPU en un chip, con 2,300 transistores.',cm:'Intel_C4004.jpg',alt:'Microprocesador Intel C4004'},
+ {y:'1981',h:'IBM PC 5150',p:'Definió la arquitectura de las computadoras personales «compatibles» que seguimos usando.',cm:'IBM_PC_5150.jpg',alt:'Computadora personal IBM PC 5150'},
+ {y:'2007',h:'El teléfono inteligente',p:'Una computadora completa en el bolsillo, con pantalla táctil e Internet móvil.',cm:'',alt:'Teléfono inteligente'},
+ {y:'Hoy',h:'Multinúcleo, SSD e IA',p:'Procesadores con decenas de núcleos y miles de millones de transistores, almacenamiento sólido e inteligencia artificial.',cm:'Intel_CPU_Core_i7_12700K_Alder_Lake_top.jpg',alt:'Procesador Intel Core i7 actual'}
+];
+
+/* ---------- fotos de Wikimedia Commons con respaldo si no cargan ---------- */
+function photo(img,name,w){
+  var fig=img.closest('figure');
+  fig.classList.remove('nofoto');img.style.display='';
+  if(!name){fig.classList.add('nofoto');img.removeAttribute('src');img.style.display='none';return}
+  img.onerror=function(){fig.classList.add('nofoto');img.style.display='none'};
+  img.src=fp(name,w);
+}
+[].forEach.call(document.querySelectorAll('img[data-cm]'),function(img){photo(img,img.getAttribute('data-cm'),img.getAttribute('data-w'))});
+
+/* créditos */
+var seen={},cl=$('creds');
+function cred(n,alt){if(!n||seen[n])return;seen[n]=1;var li=document.createElement('li');li.innerHTML='<a href="'+CM+'File:'+encodeURIComponent(n)+'" target="_blank" rel="noopener">'+alt+'</a>';cl.appendChild(li)}
+[].forEach.call(document.querySelectorAll('img[data-cm]'),function(img){cred(img.getAttribute('data-cm'),img.alt)});
+TL.forEach(function(t){cred(t.cm,t.alt)});
+
+/* ---------- recorrido: ir a una sala ---------- */
+var slides=[].slice.call(document.querySelectorAll('.slide'));
+[].forEach.call(document.querySelectorAll('[data-goto]'),function(b){b.onclick=function(){Deck.go(slides.indexOf($(b.dataset.goto)))}});
+
+/* ---------- línea de tiempo ---------- */
+var tl=$('tl');
+TL.forEach(function(t,i){var b=document.createElement('button');b.textContent=t.y;b.onclick=function(){tlShow(i)};tl.appendChild(b)});
+function tlShow(i){
+  var t=TL[i];[].forEach.call(tl.children,function(b,j){b.setAttribute('aria-pressed',j===i)});
+  $('tl-yr').textContent=t.y;$('tl-h').textContent=t.h;$('tl-p').textContent=t.p;
+  $('tl-alt').textContent=t.alt;$('tl-img').alt=t.alt;photo($('tl-img'),t.cm,700);
+  $('tl-cap').textContent=t.cm?'Foto: Wikimedia Commons':'';
+}
+tlShow(0);
+
+/* ---------- Ley de Moore ---------- */
+var REAL=[['4004',1971,2300],['8086',1978,29000],['486',1989,1200000],['Pentium 4',2000,42000000],['Core i7',2008,731000000],['Apple M1',2020,16000000000]];
+var mc=$('mchart'),LO=3,HI=11;
+(function(){var h='';for(var e=LO;e<=HI;e+=2){var pct=(e-LO)/(HI-LO)*100;h+='<div class="gl" style="bottom:calc(60px + '+pct+'% * (430 - 80) / 430)"></div><div class="ax" style="bottom:calc(52px + '+pct+'% * (430 - 80) / 430)">10<sup>'+e+'</sup></div>'}
+ h+='<div class="bars">';REAL.forEach(function(r){h+='<div class="b" data-v="'+r[2]+'"><span>'+r[0]+'<br>'+r[1]+'</span></div>'});h+='<div class="b you" id="m-you" data-v="2300"><span id="m-yl">Predicción</span></div></div>';mc.innerHTML=h})();
+function hgt(v){return Math.max(2,(Math.log10(v)-LO)/(HI-LO)*100)+'%'}
+function mDraw(){[].forEach.call(mc.querySelectorAll('.b'),function(b){b.style.height=hgt(+b.dataset.v)})}
+var mn=2300,my=1971;
+function fmt(n){return n>=1e9?(n/1e9).toLocaleString('es-PR',{maximumFractionDigits:1})+' mil millones':n>=1e6?(n/1e6).toLocaleString('es-PR',{maximumFractionDigits:1})+' millones':Math.round(n).toLocaleString('en-US')}
+function mShow(){$('m-n').textContent=fmt(mn);$('m-y').textContent='transistores en '+my+' (predicción)';$('m-you').dataset.v=mn;$('m-yl').innerHTML='Predicción<br>'+my;mDraw();
+  var near=null;REAL.forEach(function(r){if(r[1]<=my)near=r});
+  $('m-msg').textContent=my===1971?'Empieza con el Intel 4004. Cada clic duplica los transistores, como predijo Gordon Moore.':'Real más cercano: '+near[0]+' ('+near[1]+') con '+fmt(near[2])+'. ¡La predicción se acerca mucho!';
+  $('m-go').disabled=my>=2021}
+$('m-go').onclick=function(){mn*=2;my+=2;mShow()};
+$('m-rs').onclick=function(){mn=2300;my=1971;mShow()};
+mShow();
+
+/* ---------- clasificadores ---------- */
+function sorter(chipsId,scope,items,msgId,okMsg){
+  var chips=$(chipsId),sel=null,msg=$(msgId),done=0;
+  items.forEach(function(it){var c=document.createElement('button');c.className='chip';c.textContent=it[0];c.dataset.k=it[1];c.dataset.w=it[2]||'';
+    c.onclick=function(){if(c.classList.contains('ok'))return;[].forEach.call(chips.children,function(x){x.classList.remove('sel','bad')});sel=c;c.classList.add('sel')};chips.appendChild(c)});
+  [].forEach.call(scope.querySelectorAll('[data-bin]'),function(bin){bin.style.cursor='pointer';bin.onclick=function(){
+    if(!sel){msg.textContent='Primero toca un elemento.';return}
+    if(sel.dataset.k===bin.dataset.bin){var s=document.createElement('span');s.textContent=sel.textContent;bin.querySelector('.in').appendChild(s);sel.classList.remove('sel');sel.classList.add('ok');sel.disabled=true;done++;
+      msg.textContent='Correcto: '+sel.textContent+'. '+sel.dataset.w;if(done===items.length)msg.textContent=okMsg}
+    else{sel.classList.remove('sel');sel.classList.add('bad');msg.textContent='No va ahí. Piensa otra vez: '+sel.textContent+'.'}
+    sel=null}});
+}
+sorter('hs-chips',$('hs-chips').closest('.slide'),[
+ ['Windows 11','s','Es el sistema operativo.'],['Memoria RAM','h','Es una pieza física.'],['Controlador de impresora','s','Los controladores (drivers) son software.'],['BIOS/UEFI','f','Está grabado en un chip de la tarjeta madre.'],
+ ['Teclado','h','Se puede tocar.'],['Navegador web','s','Es una aplicación.'],['SSD','h','Es una unidad física.'],['Programa interno del router','f','Es firmware del dispositivo.'],['Antivirus','s','Es una aplicación.'],['Tarjeta madre','h','Es una pieza física.']
+],'hs-msg','¡Completo! Hardware se toca, software se instala y firmware vive en un chip.');
+sorter('ep-chips',$('ep-chips').closest('.slide'),[
+ ['Teclado','e','Lleva datos a la computadora.'],['Micrófono','e','Captura sonido.'],['Escáner','e','Digitaliza documentos.'],['CPU','p','Ejecuta las instrucciones.'],['Tarjeta de video (GPU)','p','Procesa la imagen.'],
+ ['SSD','a','Guarda los datos al apagar.'],['Memoria USB','a','Guarda archivos.'],['Monitor','s','Muestra los resultados.'],['Impresora','s','Presenta los resultados en papel.'],['Bocinas','s','Presentan el sonido.']
+],'ep-msg','¡Completo! Para diagnosticar, ubica primero en qué etapa del ciclo está la falla.');
+
+/* ---------- von Neumann ---------- */
+var VN=[
+ {h:'1 · Buscar',p:'La unidad de control pide a la memoria la siguiente instrucción. Viaja por el bus hasta la CPU.',lit:['ram','uc'],pk:[248,52],t:'SUMA A,B'},
+ {h:'2 · Decodificar',p:'La unidad de control interpreta la instrucción: hay que sumar A y B.',lit:['uc'],pk:[248,52],t:'SUMA A,B'},
+ {h:'3 · Ejecutar',p:'La ALU hace el cálculo con los datos que están en los registros.',lit:['alu','reg'],pk:[248,118],t:'A + B'},
+ {h:'4 · Guardar',p:'El resultado vuelve a la memoria por el bus. Y el ciclo empieza otra vez, millones de veces por segundo.',lit:['ram'],pk:[520,52],t:'RESULTADO'}
+];
+var vi=0,pk=$('vn-pk');
+function vnDraw(){[].forEach.call(document.querySelectorAll('[data-vn]'),function(b){b.classList.toggle('lit',vi>0&&VN[vi-1].lit.indexOf(b.dataset.vn)>=0&&b.dataset.vn!=='cpu')});
+  $('vn-n').textContent='Paso '+vi+' de 4';
+  if(vi===0){$('vn-h').textContent='El ciclo de instrucción';$('vn-p').textContent='La CPU repite millones de veces por segundo: buscar, decodificar, ejecutar y guardar.';pk.style.opacity=0;pk.style.left='520px';pk.style.top='52px';pk.textContent='SUMA A,B'}
+  else{var s=VN[vi-1];$('vn-h').textContent=s.h;$('vn-p').textContent=s.p;pk.style.opacity=1;pk.style.left=s.pk[0]+'px';pk.style.top=s.pk[1]+'px';pk.textContent=s.t}
+  $('vn-go').disabled=vi>=4}
+$('vn-go').onclick=function(){vi++;vnDraw()};$('vn-rs').onclick=function(){vi=0;vnDraw()};vnDraw();
+
+/* ---------- bytes ---------- */
+function tb(){var t=parseFloat($('tb').value);if(!(t>0)){$('tb-b').textContent='—';$('tb-w').textContent='—';return}
+  var b=t*1e12,g=b/Math.pow(1024,3);
+  $('tb-b').textContent=Math.round(b).toLocaleString('en-US')+' bytes';
+  $('tb-w').textContent=g>=1000?(Math.floor(b/Math.pow(1024,4)*100)/100).toFixed(2)+' TB':Math.floor(g)+' GB'}
+$('tb').oninput=tb;tb();
+
+/* ---------- componentes ---------- */
+[].forEach.call(document.querySelectorAll('.comp figure'),function(f){f.tabIndex=0;f.setAttribute('role','button');
+  f.onclick=function(){f.classList.toggle('open')};f.onkeydown=function(e){if(e.key==='Enter'){e.preventDefault();f.classList.toggle('open')}}});
+
+/* ---------- Ohm ---------- */
+function ohm(){var v=+$('ov').value,r=+$('or').value,i=v/r,p=v*i;
+  $('ov-v').textContent=v+' V';$('or-v').textContent=r+' Ω';
+  $('oi').textContent=(i<10?i.toFixed(2):i.toFixed(1))+' A';$('op').textContent=(p<10?p.toFixed(1):Math.round(p))+' W'}
+$('ov').oninput=ohm;$('or').oninput=ohm;ohm();
+
+/* ---------- ¿seguro o peligroso? ---------- */
+var SF=[
+ ['Trabajar dentro de la torre con la pulsera ESD conectada al chasis.',1,'Seguro: la pulsera iguala tu carga con la del equipo.'],
+ ['Abrir una fuente de poder para ver por qué no enciende.',0,'Peligroso: sus capacitores retienen carga aun desconectada. La fuente se reemplaza completa.'],
+ ['Dejar un módulo de RAM encima de su bolsa antiestática.',0,'Peligroso para la pieza: va dentro de la bolsa, nunca encima.'],
+ ['Limpiar el polvo con aire comprimido con el equipo desconectado.',1,'Seguro: así se limpia; nunca con una aspiradora común.'],
+ ['Usar la pulsera ESD al revisar un monitor CRT abierto.',0,'Peligroso: la pulsera crea un camino a tierra por tu cuerpo ante el alto voltaje.'],
+ ['Apagar un fuego eléctrico con un extintor clase C.',1,'Seguro: el clase C es para fuegos eléctricos; nunca uses agua.']
+];
+var si=0,sa=false;
+function sfShow(){$('sf-q').textContent=SF[si][0];$('sf-n').textContent='Situación '+(si+1)+' de '+SF.length;sa=false;
+  [].forEach.call(document.querySelectorAll('[data-sf]'),function(b){b.classList.remove('ok','bad');b.disabled=false});
+  $('sf-why').textContent='¿Seguro o peligroso?';$('sf-next').disabled=true}
+[].forEach.call(document.querySelectorAll('[data-sf]'),function(b){b.onclick=function(){if(sa)return;sa=true;
+  var ok=+b.dataset.sf===SF[si][1];b.classList.add(ok?'ok':'bad');
+  if(!ok)[].forEach.call(document.querySelectorAll('[data-sf]'),function(x){if(+x.dataset.sf===SF[si][1])x.classList.add('ok')});
+  $('sf-why').textContent=(ok?'¡Bien! ':'No. ')+SF[si][2];$('sf-next').disabled=false;
+  if(si===SF.length-1){$('sf-next').textContent='Empezar de nuevo'}}});
+$('sf-next').onclick=function(){if(si===SF.length-1){si=0;$('sf-next').textContent='Siguiente situación'}else si++;sfShow()};
+sfShow();
+
+/* ---------- ejercicio corto ---------- */
+var QZ=[
+ ['¿Qué es el firmware?',['Un programa de oficina','Software grabado en un chip, como el BIOS/UEFI','Una pieza de la fuente de poder','Un tipo de memoria RAM'],1,'El firmware es software guardado en un chip de la tarjeta madre o de un dispositivo.'],
+ ['¿En qué etapa del ciclo de procesamiento participa un SSD?',['Entrada','Procesamiento','Almacenamiento','Salida'],2,'El SSD guarda los datos aunque el equipo se apague.'],
+ ['Un disco de 2 TB, ¿cuánto mostrará aproximadamente Windows?',['2,000 GB','Unos 1.8 TB','2.2 TB','1.5 TB'],1,'2,000,000,000,000 ÷ 1,024⁴ ≈ 1.82 TB. No falta espacio: son dos maneras de contar.'],
+ ['¿Qué tecnología define la cuarta generación de computadoras?',['Tubos al vacío','Transistores','Circuitos integrados','Microprocesadores'],3,'Desde 1971 toda la CPU cabe en un chip: el microprocesador.'],
+ ['Un riel de 12 V entrega 5 A. ¿Qué potencia suministra?',['17 W','2.4 W','60 W','7 W'],2,'P = V × I = 12 × 5 = 60 W.'],
+ ['¿Para qué sirve la pulsera antiestática?',['Protege a la persona de choques eléctricos','Iguala la carga del cuerpo con el chasis para proteger los componentes','Aumenta la velocidad del equipo','Se usa al abrir fuentes de poder'],1,'Protege los componentes de la ESD; nunca se usa con alto voltaje.']
+];
+var qi=0,res=[],qa=false;
+function qzDots(){$('qz-dots').innerHTML=QZ.map(function(q,i){return '<i class="'+(res[i]===true?'ok':res[i]===false?'bad':i===qi?'cur':'')+'"></i>'}).join('')}
+function qzShow(){
+  if(qi>=QZ.length){var sc=res.filter(Boolean).length;$('qz-q').textContent='Resultado: '+sc+' de '+QZ.length+' correctas';$('qz-ops').innerHTML='';
+    $('qz-why').textContent=sc===QZ.length?'¡Excelente! Dominas la introducción del curso.':sc>=4?'¡Muy bien! Repasa las preguntas en rojo.':'Repasa las salas de las preguntas en rojo y vuelve a intentarlo.';
+    $('qz-score').textContent='';$('qz-next').textContent='Repetir';$('qz-next').disabled=false;qzDots();return}
+  var q=QZ[qi];qa=false;$('qz-q').textContent=(qi+1)+'. '+q[0];
+  $('qz-ops').innerHTML=q[1].map(function(o,i){return '<button data-o="'+i+'">'+o+'</button>'}).join('');
+  $('qz-why').textContent='Escoge una respuesta.';$('qz-score').textContent='Pregunta '+(qi+1)+' de '+QZ.length;
+  $('qz-next').textContent=qi===QZ.length-1?'Ver resultado':'Siguiente';$('qz-next').disabled=true;qzDots();
+  [].forEach.call($('qz-ops').children,function(b){b.onclick=function(){if(qa)return;qa=true;var ok=+b.dataset.o===q[2];res[qi]=ok;
+    b.classList.add(ok?'ok':'bad');$('qz-ops').children[q[2]].classList.add('ok');
+    $('qz-why').textContent=(ok?'Correcto. ':'Incorrecto. ')+q[3];$('qz-next').disabled=false;qzDots()}})}
+$('qz-next').onclick=function(){if(qi>=QZ.length){qi=0;res=[]}else qi++;qzShow()};
+qzShow();
+
+Deck.start();
+})();
+</script>
+</body>
+</html>
