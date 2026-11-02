@@ -12,13 +12,14 @@ Página del curso: https://oneill162.github.io/tesi2108-reparacion/
 | `index.html` | Portada del curso con las unidades |
 | `unidadA.html` | Unidad A: Introducción (tema: museo de la computación) |
 | `assets/deck.css`, `assets/deck.js` | Motor común de las presentaciones (heredado de TESI 2105): escala, transiciones, barra, índice, temporizador |
+| `assets/img/A/` | Fotos de la Unidad A (Wikimedia Commons; autor y licencia en la lámina de créditos) |
 | `assets/fonts/` | Schibsted Grotesk y JetBrains Mono (licencia SIL OFL) |
 
 ## Uso en clase
 
 Flechas o barra espaciadora para avanzar, **I** abre el índice, **F** pone pantalla completa. `#12` al final del enlace abre la lámina 12.
 
-Las fotos se cargan desde Wikimedia Commons, así que la proyección necesita Internet. Si una foto no carga, la lámina muestra su descripción en su lugar. Los créditos y licencias están en la penúltima lámina de cada unidad.
+Las fotos son de Wikimedia Commons y están guardadas en `assets/img/` (no dependen de otro sitio). Autor y licencia de cada una están en la penúltima lámina de cada unidad.
 
 Para OrbundSIS:
 
