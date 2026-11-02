@@ -131,7 +131,7 @@ figure.foto.nofoto .ph .alt{display:flex}
 .tools .ficha{padding:14px 20px}.tools .ficha p{font-size:19px;margin-top:4px}
 .discrow{position:absolute;left:72px;right:72px;bottom:40px}
 .field-hi .q{font-size:60px;line-height:1.05;letter-spacing:-.03em;font-weight:800;max-width:1100px}
-.cred-list{columns:2;column-gap:40px;font-size:17px;line-height:1.45;margin-top:16px;padding-left:22px}
+.cred-list{columns:2;column-gap:40px;font-size:15px;line-height:1.45;margin-top:16px;padding-left:22px}
 .cred-list a{color:var(--ink)}
 </style>
 </head>
@@ -447,7 +447,7 @@ figure.foto.nofoto .ph .alt{display:flex}
 
 <section class="slide" data-title="Créditos y referencias">
   <h2 class="mask"><span>Créditos de las fotos y referencias</span></h2>
-  <p class="small sub">Fotos de Wikimedia Commons. Cada enlace lleva a la página del archivo con su autor y licencia.</p>
+  <p class="small sub">Fotos de Wikimedia Commons, guardadas con la presentación. Cada enlace lleva a la página del archivo.</p>
   <ol class="cred-list" id="creds"></ol>
   <p class="small" style="margin-top:14px">Referencias: Meyers, M. (2025). <i>CompTIA A+ certification all-in-one exam guide</i> (11th ed.). McGraw-Hill · Docter, Q., &amp; Buhagiar, J. (2022). <i>CompTIA A+ complete study guide</i> (5th ed.). Sybex · Mueller, S. (2022). <i>Upgrading and repairing PCs</i> (22nd ed.). Que · Hennessy, J. L., &amp; Patterson, D. A. (2021). <i>Computer architecture</i> (6th ed.). Morgan Kaufmann · ITPR. (2026). Prontuario TESI 2108 (rev. mayo 2026).</p>
 </section>
@@ -468,7 +468,9 @@ figure.foto.nofoto .ph .alt{display:flex}
 'use strict';
 var $=function(i){return document.getElementById(i)};
 var CM='https://commons.wikimedia.org/wiki/';
-function fp(name,w){return CM+'Special:FilePath/'+encodeURIComponent(name)+'?width='+(w||800)}
+var CRED={"IBM_PC_5150.jpg": {"f": "IBM_PC_5150", "a": "", "l": "CC BY-SA 3.0"}, "Replica-of-first-transistor.jpg": {"f": "Replica_of_first_transistor", "a": "Federal employee", "l": "Public domain"}, "Classic_shot_of_the_ENIAC.jpg": {"f": "Classic_shot_of_the_ENIAC", "a": "Unidentified U.S. Army photographer", "l": "Public domain"}, "Antistatic_wrist_strap.jpg": {"f": "Antistatic_wrist_strap", "a": "Kms", "l": "CC BY 3.0"}, "Hard_disk_platters_and_head.jpg": {"f": "Hard_disk_platters_and_head", "a": "Mfield, Matthew Field, http://www.photography.mattfield.com", "l": "CC BY-SA 3.0"}, "Digitalmultimeter.jpg": {"f": "Digitalmultimeter", "a": "Michael Häckel", "l": "Public domain"}, "Atx_computer_motherboard_with_cpu_and_fan.jpg": {"f": "Atx_computer_motherboard_with_cpu_and_fan", "a": "Leon Brooks", "l": "Public domain"}, "Intel_C4004.jpg": {"f": "Intel_C4004", "a": "Thomas Nguyen", "l": "CC BY-SA 4.0"}, "RAM_Module_(SDRAM-DDR4).jpg": {"f": "RAM_Module_SDRAM_DDR4", "a": "ElooKoN", "l": "CC BY-SA 4.0"}, "ATX_Computer_power_supply_unit.jpg": {"f": "ATX_Computer_power_supply_unit", "a": "Dmitry Makeev", "l": "CC BY-SA 4.0"}, "Intel_4004_Chip_Layout_(29983532570).jpg": {"f": "Intel_4004_Chip_Layout_29983532570", "a": "Wolfgang Stief from Tittmoning, Germany", "l": "CC0"}, "Samsung_980_PRO_PCIe_4.0_NVMe_SSD_1TB-top_PNr°0915.jpg": {"f": "Samsung_980_PRO_PCIe_4_0_NVMe_SSD_1TB_top_PNr_0915", "a": "D-Kuru", "l": "CC BY-SA 4.0"}, "Intel_CPU_Core_i7_12700K_Alder_Lake_top.jpg": {"f": "Intel_CPU_Core_i7_12700K_Alder_Lake_top", "a": "Eric Gaba (Sting - fr:Sting)", "l": "CC BY-SA 4.0"}};
+/* fotos guardadas en assets/img/A (copias de Wikimedia Commons); en la versión de un solo archivo vienen dentro de IMGDATA */
+function fp(name){var c=CRED[name];if(!c)return '';var p='assets/img/A/'+c.f+'.jpg';return (window.IMGDATA&&IMGDATA[p])||p}
 
 /* ---------- línea de tiempo (datos) ---------- */
 var TL=[
@@ -493,7 +495,7 @@ function photo(img,name,w){
 
 /* créditos */
 var seen={},cl=$('creds');
-function cred(n,alt){if(!n||seen[n])return;seen[n]=1;var li=document.createElement('li');li.innerHTML='<a href="'+CM+'File:'+encodeURIComponent(n)+'" target="_blank" rel="noopener">'+alt+'</a>';cl.appendChild(li)}
+function cred(n,alt){if(!n||seen[n])return;seen[n]=1;var c=CRED[n]||{},li=document.createElement('li');li.innerHTML='<a href="'+CM+'File:'+encodeURIComponent(n)+'" target="_blank" rel="noopener">'+alt+'</a>'+(c.a?' · '+c.a:'')+(c.l?' · '+c.l:'');cl.appendChild(li)}
 [].forEach.call(document.querySelectorAll('img[data-cm]'),function(img){cred(img.getAttribute('data-cm'),img.alt)});
 TL.forEach(function(t){cred(t.cm,t.alt)});
 
@@ -508,7 +510,7 @@ function tlShow(i){
   var t=TL[i];[].forEach.call(tl.children,function(b,j){b.setAttribute('aria-pressed',j===i)});
   $('tl-yr').textContent=t.y;$('tl-h').textContent=t.h;$('tl-p').textContent=t.p;
   $('tl-alt').textContent=t.alt;$('tl-img').alt=t.alt;photo($('tl-img'),t.cm,700);
-  $('tl-cap').textContent=t.cm?'Foto: Wikimedia Commons':'';
+  $('tl-cap').textContent=t.cm&&CRED[t.cm]?'Foto: '+(CRED[t.cm].a||'Wikimedia Commons')+' · '+CRED[t.cm].l:'';
 }
 tlShow(0);
 
