@@ -19,9 +19,10 @@ Página del curso: https://oneill162.github.io/tesi2108-reparacion/
 | `unidadG.html` | Unidad G: Monitores (tema: la pantalla encendida) |
 | `unidadH.html` | Unidad H: Dispositivos periféricos (tema: el teclado) |
 | `unidadI.html` | Unidad I: Conectores y cables (tema: el panel de parcheo) |
+| `unidadJ.html` | Unidad J: BIOS y UEFI (tema: la pantalla de configuración; simulador del BIOS) |
 | `assets/kit.js` | Piezas comunes desde la Unidad B: fotos, créditos, clasificador y ejercicio corto |
 | `assets/deck.css`, `assets/deck.js` | Motor común de las presentaciones (heredado de TESI 2105): escala, transiciones, barra, índice, temporizador |
-| `assets/img/A/` a `I/` | Fotos de cada unidad (Wikimedia Commons; autor y licencia en la lámina de créditos) |
+| `assets/img/A/` a `J/` | Fotos de cada unidad (Wikimedia Commons; autor y licencia en la lámina de créditos) |
 | `assets/fonts/` | Schibsted Grotesk y JetBrains Mono (licencia SIL OFL) |
 
 ## Uso en clase
